@@ -1,0 +1,3176 @@
+% =====================================================================
+%  Informe: Mockito - Grupo 10
+%  Compilar:  latexmk -pdf informe.tex   (o pdflatex dos veces / Overleaf)
+% =====================================================================
+\documentclass[11pt,a4paper,oneside]{report}
+
+% ---------- Datos editables -----------------------------------------
+\newcommand{\universidad}{Universidad Mayor de San Simón}
+\newcommand{\facultad}{Facultad de Ciencias y Tecnología}
+\newcommand{\carrera}{Carrera de Ingeniería de Sistemas}
+\newcommand{\materia}{Auditoría de Sistemas}
+\newcommand{\docente}{} % <- escribir aquí el nombre del docente
+\newcommand{\tema}{Mockito}
+\newcommand{\subtema}{Framework de dobles de prueba para Java, especificación de requisitos (SRS), diseño de software (SDD) y diseño paso a paso de pruebas de caja blanca y caja negra}
+\newcommand{\grupo}{Grupo 10}
+\newcommand{\fechaexpo}{29 de septiembre de 2026 \quad 08:15 -- 08:44}
+
+% ---------- Paquetes -------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla,es-noshorthands]{babel}
+\usepackage{libertinus}
+\usepackage[scaled=0.9]{zi4}
+\usepackage{microtype}
+\usepackage[htt]{hyphenat}
+\setlength{\emergencystretch}{3em}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage{booktabs,tabularx,longtable,multirow,array}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.multipart,shapes.geometric,fit,calc,backgrounds,babel}
+\usepackage{pgf-umlsd}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fontawesome5}
+
+% ---------- Colores --------------------------------------------------
+\definecolor{primario}{HTML}{1F4E79}
+\definecolor{acento}{HTML}{C0392B}
+\definecolor{verde}{HTML}{1E8449}
+\definecolor{gris}{HTML}{5D6D7E}
+\definecolor{fondocod}{HTML}{F6F8FA}
+\definecolor{kw}{HTML}{7D3C98}
+\definecolor{str}{HTML}{1E8449}
+\definecolor{com}{HTML}{7F8C8D}
+\definecolor{anot}{HTML}{B9770E}
+\definecolor{azulclaro}{HTML}{D6EAF8}
+\definecolor{verdeclaro}{HTML}{D5F5E3}
+\definecolor{rojoclaro}{HTML}{FADBD8}
+\definecolor{amarilloclaro}{HTML}{FCF3CF}
+
+\hypersetup{colorlinks=true,linkcolor=primario,urlcolor=primario,citecolor=primario}
+
+% ---------- Estilo de títulos y encabezados --------------------------
+\titleformat{\chapter}[display]{\normalfont\huge\bfseries\color{primario}}
+  {\large\scshape Capítulo \thechapter}{0.4em}{}[{\color{primario}\titlerule[1pt]}]
+\titlespacing*{\chapter}{0pt}{0pt}{1.5em}
+\titleformat{\section}{\normalfont\Large\bfseries\color{primario}}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries\color{primario!80!black}}{\thesubsection}{0.8em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{gris}\materia}
+\fancyhead[R]{\small\color{gris}\tema\ -- \grupo}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\parskip}{4pt}
+
+% ---------- Listings (Java) ------------------------------------------
+\lstdefinestyle{java}{
+  language=Java,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{kw}\bfseries,
+  stringstyle=\color{str},
+  commentstyle=\color{com}\itshape,
+  morekeywords={record,var},
+  emph={[2]Test,Mock,InjectMocks,Spy,Captor,ExtendWith,BeforeEach,DisplayName,ParameterizedTest,CsvSource},
+  emphstyle={[2]\color{anot}},
+  backgroundcolor=\color{fondocod},
+  frame=l, framerule=2pt, rulecolor=\color{primario},
+  numbers=left, numberstyle=\tiny\color{gris}, numbersep=8pt,
+  xleftmargin=18pt, framexleftmargin=4pt,
+  breaklines=true, showstringspaces=false, tabsize=4,
+  columns=fullflexible, keepspaces=true,
+  captionpos=b,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+           {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+           {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1 {¡}{{!`}}1
+           {→}{{$\rightarrow$}}2 {≥}{{$\geq$}}1 {≤}{{$\leq$}}1 {º}{{\textordmasculine}}1
+}
+\lstdefinestyle{xml}{
+  language=XML, basicstyle=\ttfamily\small, backgroundcolor=\color{fondocod},
+  frame=l, framerule=2pt, rulecolor=\color{primario}, xleftmargin=18pt, framexleftmargin=4pt,
+  keywordstyle=\color{kw}, stringstyle=\color{str}, breaklines=true, columns=fullflexible
+}
+\lstdefinestyle{bash}{
+  language=bash, basicstyle=\ttfamily\small, backgroundcolor=\color{fondocod},
+  frame=l, framerule=2pt, rulecolor=\color{gris}, xleftmargin=18pt, framexleftmargin=4pt,
+  breaklines=true, columns=fullflexible,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1 {→}{{$\rightarrow$}}2 {¿}{{?`}}1 {¡}{{!`}}1 {✔}{{\textcolor{verde}{\faCheck}}}1 {✘}{{\textcolor{acento}{\faTimes}}}1 {├}{{|}}1 {└}{{`}}1 {│}{{|}}1 {─}{{-}}1
+}
+\lstset{style=java}
+\renewcommand{\lstlistingname}{Código}
+\renewcommand{\lstlistlistingname}{Índice de códigos}
+
+% ---------- Cajas -----------------------------------------------------
+\newtcolorbox{nota}[1][Nota]{colback=azulclaro!60,colframe=primario,fonttitle=\bfseries,title={\faInfoCircle\ #1},arc=2pt,boxrule=0.6pt}
+\newtcolorbox{atencion}[1][Atención]{colback=rojoclaro!60,colframe=acento,fonttitle=\bfseries,title={\faExclamationTriangle\ #1},arc=2pt,boxrule=0.6pt}
+\newtcolorbox{idea}[1][Idea clave]{colback=verdeclaro!60,colframe=verde,fonttitle=\bfseries,title={\faLightbulb\ #1},arc=2pt,boxrule=0.6pt}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+% ---------- TikZ estilos ---------------------------------------------
+\tikzset{
+  caja/.style={draw=primario,fill=azulclaro,rounded corners=2pt,thick,align=center,minimum height=0.9cm,font=\small},
+  ext/.style={draw=gris,fill=gray!12,rounded corners=2pt,thick,align=center,minimum height=0.9cm,font=\small,dashed},
+  flecha/.style={-{Stealth[length=2.5mm]},thick,draw=gris},
+  nodo/.style={circle,draw=primario,fill=azulclaro,thick,minimum size=7mm,inner sep=0pt,font=\small\bfseries},
+  nodod/.style={nodo,fill=amarilloclaro,draw=anot},
+  nodof/.style={nodo,fill=rojoclaro,draw=acento},
+  clase/.style={rectangle split,rectangle split parts=3,draw=primario,thick,fill=white,
+                rectangle split part fill={azulclaro,white,white},font=\scriptsize,align=left,inner sep=3pt},
+  interfaz/.style={clase,rectangle split parts=2,rectangle split part fill={verdeclaro,white},draw=verde},
+}
+
+% =====================================================================
+\begin{document}
+
+% ---------------------------- PORTADA --------------------------------
+\begin{titlepage}
+  \centering
+  {\color{primario}\rule{\linewidth}{2pt}}\\[0.6cm]
+  {\LARGE\bfseries\scshape \universidad}\\[0.2cm]
+  {\large \facultad}\\[0.1cm]
+  {\large \carrera}\\[0.6cm]
+  {\color{primario}\rule{\linewidth}{0.6pt}}\\[1.8cm]
+
+  {\large\scshape Materia: \materia}\\[1.2cm]
+  {\fontsize{46}{50}\selectfont\bfseries\color{primario} \tema}\\[0.5cm]
+  \begin{minipage}{0.8\linewidth}\centering\large\itshape \subtema\end{minipage}\\[1.6cm]
+
+  \begin{tikzpicture}
+    \node[caja,minimum width=4.2cm] (t) {\faFlask\ Prueba unitaria};
+    \node[caja,right=1.2cm of t,minimum width=3.4cm,fill=amarilloclaro,draw=anot] (s) {\faCogs\ Clase bajo prueba};
+    \node[ext,right=1.2cm of s,minimum width=3cm] (m) {\faUserSecret\ Mock};
+    \draw[flecha] (t) -- (s);
+    \draw[flecha] (s) -- (m);
+  \end{tikzpicture}\\[1.8cm]
+
+  {\large\bfseries \grupo}\\[0.4cm]
+  \begin{tabular}{l}
+    Main Rocabado Jairo Gael \\
+    Banda Tellez Fernando \\
+    Velasquez Ricaldez Rodrigo
+  \end{tabular}\\[0.8cm]
+  \ifx\docente\empty\else{\large Docente: \docente}\\[0.4cm]\fi
+  {\small Exposición: \fechaexpo}\\
+  \vfill
+  {\color{primario}\rule{\linewidth}{0.6pt}}\\[0.2cm]
+  {\large Cochabamba -- Bolivia \quad 2026}
+\end{titlepage}
+
+% ---------------------------- RESUMEN --------------------------------
+\pagenumbering{roman}
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
+
+En las pruebas unitarias hay que aislar la unidad que se prueba de sus dependencias: bases de datos, servicios web, pasarelas de pago o servidores de correo. \textbf{Mockito} es el framework de código abierto más usado en el ecosistema Java para crear \emph{dobles de prueba} (mocks, stubs y spies). Con él, el tester programa el comportamiento de esas dependencias y verifica cómo interactúa con ellas la clase bajo prueba.
+
+Este informe presenta primero el marco teórico: pruebas de software, dobles de prueba y técnicas de caja negra y caja blanca. Luego explica qué es Mockito, cómo se usa su API y, en detalle, su \textbf{arquitectura y componentes internos}. Para aplicar la teoría se diseñó un sistema de ejemplo, un \emph{Servicio de Pedidos}, especificado con una \textbf{SRS} (\emph{Software Requirements Specification}, IEEE 830 / ISO/IEC/IEEE 29148) y documentado con un \textbf{SDD} (\emph{Software Design Description}, IEEE 1016-2009). Se explica paso a paso cómo se diseña cada caso de prueba, desde el requisito hasta el código, y se desarrollaron 65 pruebas automatizadas con JUnit 6 y Mockito 5.24:
+\begin{itemize}
+  \item diez ejemplos didácticos que recorren la API de Mockito y hacen visibles sus componentes internos;
+  \item pruebas de \textbf{caja negra}: partición en clases de equivalencia, análisis de valores límite y tabla de decisión;
+  \item pruebas de \textbf{caja blanca}: camino básico de McCabe con $V(G)=7$ y cobertura de decisiones.
+\end{itemize}
+Las 65 pruebas pasan y alcanzan el 100\,\% de cobertura de ramas en la lógica de negocio, medida con JaCoCo. Además, la comparación muestra que la caja negra por sí sola cubre 11 de 12 ramas; la rama que falta solo aparece al analizar el código. Así se confirma que las dos técnicas se complementan.
+
+Desde el punto de vista de la \textbf{auditoría de sistemas}, las pruebas automatizadas con dobles de prueba producen evidencia repetible, trazable a los requisitos y medible mediante cobertura. Esa evidencia sirve para evaluar la calidad de los controles de desarrollo y cambio del software.
+
+\medskip
+\noindent\textbf{Palabras clave:} Mockito, pruebas unitarias, dobles de prueba, caja negra, caja blanca, complejidad ciclomática, diseño de casos de prueba, SRS, SDD, IEEE 1016, JUnit, auditoría de sistemas.
+
+\tableofcontents
+\listoffigures
+\listoftables
+\lstlistoflistings
+
+\clearpage
+\pagenumbering{arabic}
+
+% =====================================================================
+\chapter{Introducción}
+% =====================================================================
+
+\section{Antecedentes}
+Un sistema real casi nunca trabaja solo. Un servicio de pedidos consulta el inventario en una base de datos, cobra a través de un banco y envía correos de confirmación. Probar ese servicio junto con todas sus dependencias reales trae varios problemas:
+\begin{itemize}
+  \item \textbf{Lentitud}: cada prueba abre conexiones de red o de base de datos.
+  \item \textbf{Fragilidad}: si el banco está caído, la prueba falla aunque nuestro código esté bien.
+  \item \textbf{Efectos secundarios}: no queremos cobrar dinero real ni enviar correos a clientes reales.
+  \item \textbf{Escenarios difíciles de reproducir}: ¿cómo provocar a voluntad un \emph{``pago rechazado por fondos insuficientes''} o una base de datos caída?
+\end{itemize}
+La solución son los \textbf{dobles de prueba}: objetos que se hacen pasar por las dependencias reales y que el tester controla por completo. Mockito es la herramienta estándar de facto para crearlos en Java.
+
+\section{Objetivos}
+\subsection{Objetivo general}
+Explicar el funcionamiento y el uso del framework Mockito, y aplicarlo en pruebas de caja blanca y caja negra sobre un sistema de ejemplo documentado con un SDD.
+
+\subsection{Objetivos específicos}
+\begin{enumerate}
+  \item Describir los conceptos de prueba unitaria y dobles de prueba, y las técnicas de caja negra y caja blanca.
+  \item Explicar la arquitectura de Mockito y cada uno de sus componentes (fachada, \emph{mock makers}, manejadores, registro de invocaciones, matchers, verificación, plugins) y su API principal (\emph{stubbing}, verificación, \emph{matchers}, \emph{captors}, \emph{spies}, BDD, métodos estáticos).
+  \item Elaborar la especificación de requisitos (SRS, IEEE 830 / ISO/IEC/IEEE 29148) y el documento de diseño (SDD, IEEE 1016) de un sistema de ejemplo diseñado para ser \emph{testeable}.
+  \item Implementar ejemplos prácticos ejecutables que muestren cada característica de Mockito.
+  \item Explicar paso a paso cómo se diseñan los casos de prueba de caja negra (clases de equivalencia, valores límite, tabla de decisión) y de caja blanca (grafo de flujo, camino básico, cobertura de ramas), y cómo se escribe cada prueba.
+  \item Medir la cobertura y relacionar los resultados con la auditoría de sistemas.
+\end{enumerate}
+
+\section{Justificación}
+Las normas y marcos de referencia de auditoría de TI, como COBIT 2019 en su dominio BAI03 (\emph{Gestionar la identificación y construcción de soluciones}), incluido el diseño y la ejecución de pruebas, e ISO/IEC/IEEE 29119 (\emph{Software Testing}), piden que el software se pruebe de forma planificada y documentada, y que existan evidencias verificables de esas pruebas. Las pruebas unitarias automatizadas con Mockito cumplen esas condiciones: se ejecutan en milisegundos, se repiten sin intervención humana, se conectan a los requisitos y dejan métricas objetivas como el número de casos o el porcentaje de cobertura. Conocer la herramienta permite al auditor evaluar si la estrategia de pruebas de un equipo de desarrollo es suficiente.
+
+\section{Alcance}
+El trabajo abarca pruebas \textbf{unitarias} en Java con JUnit 6 y Mockito 5. No incluye pruebas de integración, de sistema ni de rendimiento, aunque se mencionan como contexto. El sistema de ejemplo es didáctico: sus dependencias externas (base de datos, banco, correo) solo existen como interfaces y en las pruebas se sustituyen por mocks.
+
+% =====================================================================
+\chapter{Marco teórico}
+% =====================================================================
+
+\section{Pruebas de software}
+La prueba de software es el proceso de ejecutar un programa con la intención de encontrar defectos y de obtener evidencia de que cumple sus requisitos. Las pruebas se organizan por \textbf{niveles}:
+
+\begin{table}[H]
+\centering
+\caption{Niveles de prueba}
+\begin{tabularx}{\linewidth}{lXl}
+\toprule
+\textbf{Nivel} & \textbf{Qué se prueba} & \textbf{Herramientas típicas}\\
+\midrule
+Unitaria & Una clase o método de forma aislada & JUnit, \textbf{Mockito}\\
+Integración & La colaboración entre componentes reales (p.\,ej., servicio + base de datos) & Testcontainers, Spring Test\\
+Sistema & El sistema completo contra los requisitos & Selenium, Postman\\
+Aceptación & Que el sistema satisfaga al usuario o al negocio & Cucumber, pruebas manuales\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La \emph{pirámide de pruebas} (Mike Cohn) recomienda tener muchas pruebas unitarias, rápidas y baratas, y pocas pruebas de extremo a extremo, lentas y costosas. Mockito es lo que hace viable la base de esa pirámide.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \fill[verdeclaro,draw=verde,thick] (-4,0) -- (4,0) -- (2.67,1.5) -- (-2.67,1.5) -- cycle;
+  \fill[amarilloclaro,draw=anot,thick] (-2.67,1.5) -- (2.67,1.5) -- (1.33,3) -- (-1.33,3) -- cycle;
+  \fill[rojoclaro,draw=acento,thick] (-1.33,3) -- (1.33,3) -- (0,4.5) -- cycle;
+  \node at (0,0.75) {\textbf{Unitarias} (JUnit + Mockito)};
+  \node at (0,2.25) {Integración};
+  \node at (0,3.55) {\small E2E};
+  \draw[flecha] (5,0.2) -- node[right,align=left,font=\small]{más lentas\\más costosas\\menos cantidad} (5,4.3);
+\end{tikzpicture}
+\caption{Pirámide de pruebas}
+\end{figure}
+
+\subsection{Características de una buena prueba unitaria (FIRST)}
+\begin{description}
+  \item[Fast] Rápida: milisegundos, sin red ni disco.
+  \item[Independent] Independiente: no depende del orden ni de otras pruebas.
+  \item[Repeatable] Repetible: da el mismo resultado en cualquier máquina y en cualquier momento.
+  \item[Self-validating] Autoverificable: aprueba o falla sola, sin inspección manual.
+  \item[Timely] Oportuna: se escribe junto con el código (o antes, en TDD).
+\end{description}
+Sin dobles de prueba es prácticamente imposible cumplir F, I y R cuando la unidad tiene dependencias externas.
+
+\section{Dobles de prueba}
+Gerard Meszaros (\emph{xUnit Test Patterns}, 2007) acuñó el término \emph{test double}, por analogía con el doble de riesgo del cine, y clasificó cinco tipos:
+
+\begin{table}[H]
+\centering
+\caption{Tipos de dobles de prueba y su equivalente en Mockito}
+\begin{tabularx}{\linewidth}{lXl}
+\toprule
+\textbf{Tipo} & \textbf{Descripción} & \textbf{En Mockito}\\
+\midrule
+Dummy & Objeto que solo se pasa para completar parámetros; nunca se usa. & \code{mock(X.class)} sin configurar\\
+Stub & Devuelve respuestas predefinidas a las llamadas. & \code{when(...).thenReturn(...)}\\
+Spy & Objeto real que además registra cómo fue usado. & \code{spy(obj)}, \code{@Spy}\\
+Mock & Objeto con expectativas sobre las llamadas que debe recibir; se verifica. & \code{verify(mock)...}\\
+Fake & Implementación funcional pero simplificada (p.\,ej., base de datos en memoria). & No aplica (se programa a mano)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{idea}
+En Mockito, un mismo objeto creado con \code{mock()} puede actuar como \emph{stub} (cuando se le programan respuestas) y como \emph{mock} (cuando se verifican sus llamadas). Por eso, en el habla cotidiana se le llama ``mock'' a todo.
+\end{idea}
+
+\subsection{Verificación de estado frente a verificación de comportamiento}
+\begin{itemize}
+  \item \textbf{Verificación de estado}: se comprueba el \emph{resultado}, por ejemplo \code{assertEquals(PAGADO, pedido.getEstado())}.
+  \item \textbf{Verificación de comportamiento}: se comprueba la \emph{interacción}, por ejemplo \code{verify(pasarela).cobrar("a@b.com", 450.0)}.
+\end{itemize}
+Mockito permite ambas. Veremos que la primera encaja con la \textbf{caja negra} y la segunda con la \textbf{caja blanca}.
+
+\section{Pruebas de caja negra}
+En las pruebas de caja negra (funcionales o basadas en la especificación), los casos de prueba se diseñan a partir de los \textbf{requisitos}, sin mirar el código fuente. Solo interesa la relación entre entradas y salidas.
+
+\begin{description}
+  \item[Partición en clases de equivalencia.] El dominio de cada entrada se divide en clases cuyos elementos el sistema debe tratar igual. Se elige un representante de cada clase válida y de cada clase inválida.
+  \item[Análisis de valores límite.] Los defectos se concentran en los bordes de las clases (el típico error de \code{<} por \code{<=}). Por eso se prueban los valores exactos del límite y los inmediatamente adyacentes.
+  \item[Tabla de decisión.] Cuando la salida depende de combinaciones de condiciones, se tabulan todas las combinaciones (reglas) y la acción esperada para cada una.
+  \item[Transición de estados.] Se prueban los estados de una entidad y los eventos que provocan sus transiciones.
+\end{description}
+
+\section{Pruebas de caja blanca}
+En las pruebas de caja blanca (estructurales), los casos se diseñan a partir de la \textbf{estructura interna del código}: sentencias, decisiones, condiciones y caminos.
+
+\begin{table}[H]
+\centering
+\caption{Criterios de cobertura de caja blanca (de menor a mayor exigencia)}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Criterio} & \textbf{Exige que\ldots}\\
+\midrule
+Sentencias & cada instrucción se ejecute al menos una vez.\\
+Decisiones (ramas) & cada decisión (\code{if}, \code{while}, \code{for}) tome los valores verdadero y falso.\\
+Condiciones & cada condición atómica de una decisión compuesta tome ambos valores.\\
+Decisión/condición & se cumplan a la vez los dos criterios anteriores.\\
+Camino básico & se ejecute un conjunto de caminos linealmente independientes ($V(G)$ caminos).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Complejidad ciclomática de McCabe}
+Thomas McCabe (1976) propuso representar un módulo como un \textbf{grafo de flujo} $G$ y calcular su complejidad ciclomática $V(G)$, que equivale al número de caminos linealmente independientes y, por lo tanto, al \textbf{número mínimo de casos de prueba} del criterio de camino básico. Se calcula de tres formas equivalentes:
+\begin{align*}
+  V(G) &= E - N + 2 && \text{(aristas $-$ nodos $+ 2$)}\\
+  V(G) &= P + 1     && \text{(nodos predicado o decisiones simples $+ 1$)}\\
+  V(G) &= R         && \text{(número de regiones del grafo planar)}
+\end{align*}
+
+\subsection{¿Qué aporta Mockito a la caja blanca?}
+Para recorrer un camino concreto hay que forzar las decisiones del código. Muchas decisiones dependen de lo que devuelven las dependencias, por ejemplo \emph{``si el banco aprueba el pago\ldots''}. Con Mockito, un \emph{stub} fija ese valor y hace que el programa entre en la rama deseada. Después, \code{verify()} confirma qué instrucciones internas se ejecutaron y cuáles no. Sin mocks, muchas ramas serían inalcanzables en una prueba unitaria.
+
+\section{Las pruebas en la auditoría de sistemas}
+Para el auditor de sistemas, las pruebas automatizadas son \textbf{evidencia} de que los controles de desarrollo funcionan:
+\begin{itemize}
+  \item \textbf{Trazabilidad}: cada requisito debe tener al menos una prueba asociada (matriz de trazabilidad).
+  \item \textbf{Repetibilidad}: el auditor puede volver a ejecutar las pruebas y obtener el mismo resultado.
+  \item \textbf{Medición objetiva}: la cobertura de sentencias y de ramas (JaCoCo) cuantifica qué parte del código fue probada.
+  \item \textbf{Control de cambios}: en integración continua, ningún cambio llega a producción si rompe una prueba.
+  \item \textbf{Segregación}: el uso de mocks garantiza que las pruebas no tocan datos de producción, lo que protege la confidencialidad y la integridad.
+\end{itemize}
+
+% =====================================================================
+\chapter{Mockito}
+% =====================================================================
+
+\section{¿Qué es Mockito?}
+Mockito es un framework de código abierto (licencia MIT) para crear dobles de prueba en Java y en otros lenguajes de la JVM, como Kotlin o Scala. Lo creó \textbf{Szczepan Faber} en 2007-2008 a partir del código de EasyMock. Buscaba una API más simple y legible, basada en el patrón \emph{arrange--act--assert}, en la que primero se ejecuta el código y después se verifica (en lugar de declarar expectativas antes, como en EasyMock). Hoy es la biblioteca de mocking más usada en Java y viene incluida por defecto en \code{spring-boot-starter-test}.
+
+\begin{table}[H]
+\centering
+\caption{Ficha técnica}
+\begin{tabular}{ll}
+\toprule
+Sitio oficial & \url{https://site.mockito.org}\\
+Repositorio & \url{https://github.com/mockito/mockito}\\
+Versión usada & 5.24.0 (Maven Central)\\
+Requisito & Java 11 o superior (Mockito 5)\\
+Dependencias & Byte Buddy (generación de código), Objenesis (instanciación)\\
+Integración & JUnit 5/6 (\code{mockito-junit-jupiter}), JUnit 4, TestNG, Spring\\
+Licencia & MIT\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{¿Cómo funciona? Visión rápida}
+Mockito fabrica en tiempo de ejecución objetos que se hacen pasar por el tipo pedido, pero cuyos métodos no ejecutan el código original: cada llamada se desvía a un manejador interno que la \textbf{registra} y \textbf{responde} según lo programado. \code{when()} programa respuestas usando ``la última llamada hecha a un mock'' y \code{verify()} revisa el registro de llamadas. El capítulo~\ref{cap:arquitectura} explica en detalle la arquitectura y cada uno de sus componentes. De ese diseño se derivan tres reglas prácticas:
+
+\begin{atencion}[Reglas que se derivan del funcionamiento interno]
+\begin{itemize}
+  \item Si un argumento usa un \emph{matcher}, \textbf{todos} deben usarlos: \code{cobrar(eq("a"), anyDouble())}, y no \code{cobrar("a", anyDouble())}.
+  \item Con parámetros primitivos hay que usar la variante primitiva (\code{anyDouble()}, \code{doubleThat()}). \code{any()} o \code{argThat()} devuelven \code{null} y producen un \code{NullPointerException} al convertirse a \code{double}. Nos pasó durante el desarrollo de los ejemplos (sección~\ref{sec:matchers}).
+  \item Los métodos \code{void} no pueden ir dentro de \code{when(...)} porque no devuelven nada; para ellos se usa la familia \code{doThrow()/doAnswer()/doNothing().when(mock).metodo()}.
+\end{itemize}
+\end{atencion}
+
+\section{Instalación}
+\begin{lstlisting}[style=xml,caption={Dependencias Maven (\code{pom.xml})}]
+<dependency>
+  <groupId>org.mockito</groupId>
+  <artifactId>mockito-core</artifactId>
+  <version>5.24.0</version>
+  <scope>test</scope>
+</dependency>
+<dependency>
+  <groupId>org.mockito</groupId>
+  <artifactId>mockito-junit-jupiter</artifactId>
+  <version>5.24.0</version>
+  <scope>test</scope>
+</dependency>
+\end{lstlisting}
+
+En Gradle: \code{testImplementation("org.mockito:mockito-core:5.24.0")}.
+
+\begin{nota}[JDK 21 o superior]
+Las JDK modernas desaconsejan que un agente se cargue dinámicamente durante la ejecución (JEP 451) y muestran un aviso. La recomendación oficial es registrar Mockito como agente al arrancar la JVM: \code{-javaagent:mockito-core-5.24.0.jar}. En el proyecto de ejemplo esto se configura en el \code{maven-surefire-plugin} y en el script \code{run.sh}.
+\end{nota}
+
+\section{API principal}
+
+\begin{longtable}{p{0.42\linewidth}p{0.52\linewidth}}
+\caption{Resumen de la API de Mockito}\\
+\toprule
+\textbf{API} & \textbf{Uso}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{API} & \textbf{Uso}\\
+\midrule
+\endhead
+\multicolumn{2}{l}{\textit{Creación}}\\
+\code{mock(Clase.class)} / \code{@Mock} & Crea un mock.\\
+\code{spy(objeto)} / \code{@Spy} & Envuelve un objeto real (mock parcial).\\
+\code{@InjectMocks} & Crea el objeto bajo prueba e inyecta los mocks (constructor, setter o campo).\\
+\code{@Captor} & Crea un \code{ArgumentCaptor}.\\
+\code{mockStatic(Clase.class)} & Simula métodos estáticos dentro de un \code{try}.\\
+\midrule
+\multicolumn{2}{l}{\textit{Stubbing (programar respuestas)}}\\
+\code{when(m.f()).thenReturn(v)} & Devuelve \code{v}; con varios valores, respuestas consecutivas.\\
+\code{thenThrow(ex)} & Lanza una excepción.\\
+\code{thenAnswer(inv -> ...)} & Respuesta calculada con los argumentos recibidos.\\
+\code{thenCallRealMethod()} & Ejecuta el método real.\\
+\code{doReturn/doThrow/doAnswer/doNothing().when(m).f()} & Para métodos \code{void} y para spies.\\
+\code{given(...).willReturn(...)} & Equivalente BDD de \code{when}.\\
+\midrule
+\multicolumn{2}{l}{\textit{Verificación}}\\
+\code{verify(m).f()} & Se llamó exactamente una vez.\\
+\code{verify(m, times(n) | never() | atLeast(n) | atMost(n))} & Cantidad de llamadas.\\
+\code{inOrder(m1, m2).verify(...)} & Orden de las llamadas.\\
+\code{verifyNoInteractions(m)} & El mock no se usó en absoluto.\\
+\code{verifyNoMoreInteractions(m)} & No hubo llamadas sin verificar.\\
+\code{then(m).should().f()} & Equivalente BDD de \code{verify}.\\
+\midrule
+\multicolumn{2}{l}{\textit{Argument matchers}}\\
+\code{any()}, \code{any(Clase.class)}, \code{anyString()}, \code{anyInt()}, \code{anyDouble()} & Cualquier valor del tipo.\\
+\code{eq(v)}, \code{isNull()}, \code{notNull()} & Igualdad o nulidad.\\
+\code{contains()}, \code{startsWith()}, \code{matches(regex)} & Cadenas.\\
+\code{argThat(lambda)}, \code{intThat()}, \code{doubleThat()} & Condición personalizada.\\
+\bottomrule
+\end{longtable}
+
+\section{Estrictez (\emph{strict stubs})}
+Con \code{MockitoExtension}, Mockito trabaja por defecto en modo \code{STRICT\_STUBS}: si una prueba programa un \emph{stub} que nunca se usa, falla con \code{UnnecessaryStubbingException}. Así se detectan pruebas mal escritas o código muerto en las pruebas. Cuando un stub no usado es intencional, se marca con \code{lenient()}.
+
+\section{Buenas prácticas y limitaciones}
+\begin{itemize}
+  \item \textbf{Diseñar para la testabilidad}: recibir las dependencias por constructor (inyección de dependencias) y programar contra interfaces.
+  \item \textbf{No simular lo que no es tuyo} (\emph{don't mock what you don't own}): es preferible envolver las bibliotecas de terceros en una interfaz propia y simular esa interfaz.
+  \item \textbf{No simular objetos de valor} (\emph{records}, DTO, \code{String}, \code{List}): basta con crear instancias reales.
+  \item \textbf{No abusar de \code{verify()}}: verificar cada detalle acopla la prueba a la implementación y la vuelve frágil ante refactorizaciones.
+  \item \textbf{Un comportamiento por prueba} y nombres descriptivos (\code{@DisplayName}).
+  \item \textbf{Limitaciones}: Mockito no simula \code{equals()} ni \code{hashCode()}, y tampoco métodos privados. Los mocks estáticos solo valen en el hilo actual y dentro de su bloque. Un mock no garantiza que la dependencia real se comporte igual; para eso están las pruebas de integración.
+\end{itemize}
+
+\section{Comparación con otras herramientas}
+\begin{table}[H]
+\centering
+\caption{Mockito frente a otras herramientas de mocking}
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{Herramienta} & \textbf{Lenguaje} & \textbf{Observaciones}\\
+\midrule
+\textbf{Mockito} & Java/JVM & API simple; verificación posterior; estándar de facto.\\
+EasyMock & Java & Modelo \emph{record--replay}: las expectativas se declaran antes.\\
+JMockit / PowerMock & Java & Simulaban estáticos, constructores y \code{final}; hoy están en desuso porque Mockito inline ya cubre esos casos.\\
+MockK & Kotlin & Pensado para Kotlin (corrutinas, objetos).\\
+unittest.mock & Python & Incluido en la biblioteca estándar.\\
+Moq / NSubstitute & C\# & Equivalentes en .NET.\\
+Jest (\code{jest.fn()}) & JavaScript & \emph{Mocks} integrados en el runner.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+\chapter{Arquitectura y componentes de Mockito}
+\label{cap:arquitectura}
+% =====================================================================
+
+Este capítulo explica \textbf{cómo está construido Mockito por dentro}: de qué piezas se compone, qué hace cada una y cómo colaboran cuando se escribe una línea como esta:
+\begin{center}\code{when(inventario.stockDisponible("P1")).thenReturn(5);}\end{center}
+Empieza desde cero, con conceptos básicos y una analogía, y avanza hasta el nivel de las clases reales de la biblioteca.
+
+\begin{nota}[¿De dónde sale esta información?]
+Los nombres de clases, paquetes y el orden de las operaciones de este capítulo se verificaron sobre el propio \code{mockito-core-5.24.0.jar}: se listó su contenido y se inspeccionó el bytecode con \code{javap}. Además, los ejemplos \code{E09\_ArquitecturaInternaTest} y \code{E10\_ComponentesExtensiblesTest} del proyecto \emph{demuestran en ejecución} cada afirmación importante (sección~\ref{sec:demo-arquitectura}).
+\end{nota}
+
+\section{Conceptos previos}
+Para entender la arquitectura hacen falta algunos conceptos de Java y de la máquina virtual. Si ya se conocen, se puede saltar esta sección.
+
+\begin{longtable}{p{0.2\linewidth}p{0.74\linewidth}}
+\caption{Glosario de conceptos base}\\
+\toprule
+\textbf{Concepto} & \textbf{Explicación sencilla}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Concepto} & \textbf{Explicación sencilla}\\
+\midrule
+\endhead
+Clase & El ``molde'' o plano con el que se fabrican objetos. Ej.: \code{PasarelaPago}.\\
+Objeto (instancia) & Una ``pieza'' concreta fabricada con el molde. Ej.: la pasarela que usa el sistema.\\
+Interfaz & Un contrato: dice \emph{qué} métodos debe tener un objeto, pero no \emph{cómo} funcionan. Ej.: \code{PasarelaPago} solo declara \code{cobrar(email, monto)}.\\
+Método & Una acción que un objeto sabe hacer. Llamar a un método = \emph{invocarlo}.\\
+JVM & \emph{Java Virtual Machine}: el programa que ejecuta el código Java.\\
+Bytecode & El ``idioma'' que entiende la JVM. El compilador traduce el \code{.java} a bytecode (\code{.class}). Quien modifica el bytecode cambia lo que hace la clase \emph{sin tocar el código fuente}.\\
+ClassLoader & El componente de la JVM que carga las clases en memoria cuando se necesitan.\\
+Reflexión & La capacidad de un programa de examinarse a sí mismo en ejecución: preguntar qué métodos tiene una clase, invocarlos por nombre, leer campos privados, etc.\\
+Proxy dinámico & Un objeto generado en ejecución que implementa una interfaz y desvía \emph{todas} las llamadas a un único ``manejador''.\\
+Agente Java & Un programa que se engancha a la JVM (opción \code{-javaagent} o conexión dinámica) y obtiene la \emph{Instrumentation API}, que permite \textbf{reescribir el bytecode de clases ya cargadas}.\\
+Hilo (\emph{thread}) & Una línea de ejecución. Una prueba corre, normalmente, en un solo hilo.\\
+\code{ThreadLocal} & Una ``caja'' de datos en la que cada hilo ve su propio contenido. Mockito guarda en una de ellas su estado de trabajo.\\
+Generación de código & Crear clases nuevas en tiempo de ejecución (sin escribirlas a mano). Mockito usa la biblioteca Byte Buddy para eso.\\
+\bottomrule
+\end{longtable}
+
+\section{Mockito explicado con una analogía}
+Imaginemos que una prueba es el \textbf{ensayo de una obra de teatro}:
+
+\begin{itemize}
+  \item La \textbf{obra} es la prueba unitaria.
+  \item El \textbf{actor principal} es la clase que queremos evaluar (\code{PedidoService}). Es el único actor real.
+  \item Los \textbf{actores secundarios} (banco, base de datos, correo) no vienen al ensayo; en su lugar se usan \textbf{marionetas} (los mocks).
+  \item Un \textbf{taller} fabrica las marionetas con la forma exacta de cada actor, para que el actor principal no note la diferencia.
+  \item El \textbf{director} (quien escribe la prueba) entrega a cada marioneta un \textbf{guion}: ``si te preguntan por el stock de P1, responde 5''.
+  \item Cada marioneta lleva una \textbf{grabadora} que registra todo lo que le dijeron.
+  \item Al final, el director \textbf{revisa la grabación}: ``¿le pidieron al banco cobrar 450 Bs exactamente una vez?''.
+  \item Un \textbf{apuntador} entre bastidores recuerda cuál fue la última frase dicha a una marioneta y qué está haciendo el director en ese momento (escribiendo un guion o revisando una grabación).
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{De la analogía a los componentes reales de Mockito}
+\begin{tabularx}{\linewidth}{lXl}
+\toprule
+\textbf{En la analogía} & \textbf{Qué hace} & \textbf{Componente real}\\
+\midrule
+Marioneta & Se hace pasar por el actor & El \emph{mock}\\
+Taller & Fabrica la marioneta con la forma correcta & \code{MockMaker} + Byte Buddy + Objenesis\\
+Ficha técnica del pedido al taller & Tipo, nombre, respuesta por defecto\ldots & \code{MockSettings} / \code{MockCreationSettings}\\
+``Cerebro'' de la marioneta & Recibe cada frase y decide qué contestar & \code{MockHandler}\\
+Grabadora + libreta de guiones & Guarda las llamadas y las respuestas programadas & \code{InvocationContainer}\\
+Guion & ``Si te dicen X, responde Y'' & \emph{Stub}: \code{when().thenReturn()} y \code{Answer}\\
+Apuntador & Recuerda la última llamada y el modo actual & \code{MockingProgress} (por hilo)\\
+Comodines del guion & ``Cualquier producto'', ``cualquier monto'' & \code{ArgumentMatcher} (\code{any()}, \code{eq()}\ldots)\\
+Revisión de la grabación & Comprobar qué se dijo y cuántas veces & \code{verify()} + \code{VerificationMode}\\
+Crítico que señala errores & Explica claramente qué salió mal & \code{Reporter} y excepciones de Mockito\\
+Jefe de escena & Prepara todo antes del ensayo y revisa al final & \code{MockitoExtension} / \code{MockitoSession}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Vista general por capas}
+Mockito se organiza en capas. Cada capa solo conoce a la de abajo, lo que permite cambiar piezas (por ejemplo, la forma de fabricar mocks) sin afectar al usuario.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  capa/.style={draw=#1,fill=#1!12,thick,rounded corners=3pt,minimum width=15cm,minimum height=1.35cm},
+  comp/.style={draw=#1,fill=white,rounded corners=2pt,font=\scriptsize,inner sep=2.5pt,align=center},
+  etq/.style={font=\scriptsize\bfseries,anchor=west,align=left}]
+  % capas
+  \node[capa=gris]     (c1) at (0,0)     {};
+  \node[capa=primario] (c2) at (0,-1.6)  {};
+  \node[capa=acento]   (c3) at (0,-3.55) {};
+  \node[capa=anot]     (c4) at (0,-5.5)  {};
+  \node[capa=verde]    (c5) at (0,-7.1)  {};
+  \node[capa=gris]     (c6) at (0,-8.7)  {};
+  \path (c3.north) ++(0,0) coordinate (dummy);
+  % alturas extra para la capa interna
+  \node[capa=acento,minimum height=2.3cm] at (0,-3.55) {};
+  \node[etq] at (c1.west) {1. Prueba\\\phantom{1. }(tu código)};
+  \node[etq] at (c2.west) {2. API\\\phantom{2. }pública};
+  \node[etq] at ($(c3.west)+(0,0)$) {3. Núcleo\\\phantom{3. }interno};
+  \node[etq] at (c4.west) {4. SPI de\\\phantom{4. }plugins};
+  \node[etq] at (c5.west) {5. Bibliotecas};
+  \node[etq] at (c6.west) {6. JVM};
+  % contenido
+  \node[comp=gris] at (1.2,0) {\code{@Test}, \code{@ExtendWith(MockitoExtension.class)}, \code{when(...)}, \code{verify(...)}\\\code{PedidoServiceCajaBlancaTest}, \code{E01\ldots E10}};
+  \node[comp=primario] at (1.2,-1.6) {\code{Mockito} \; \code{BDDMockito} \; \code{ArgumentMatchers} \; \code{ArgumentCaptor} \; \code{InOrder} \; \code{MockedStatic}\\ \code{@Mock @Spy @Captor @InjectMocks} \; \code{Answer} \; \code{MockSettings} \; \code{VerificationMode} \; \code{Strictness} \; \code{MockitoSession}};
+  \node[comp=acento] at (-3.4,-3.05) {\textbf{MockitoCore}\\fachada interna};
+  \node[comp=acento] at (-0.9,-3.05) {\textbf{creation}\\MockSettingsImpl};
+  \node[comp=acento] at (1.5,-3.05) {\textbf{handler}\\MockHandlerImpl};
+  \node[comp=acento] at (3.9,-3.05) {\textbf{progress}\\MockingProgress};
+  \node[comp=acento] at (6.1,-3.05) {\textbf{matchers}\\Any, Equals\ldots};
+  \node[comp=acento] at (-3.4,-4.1) {\textbf{invocation}\\InvocationMatcher};
+  \node[comp=acento] at (-0.9,-4.1) {\textbf{stubbing}\\InvocationContainer};
+  \node[comp=acento] at (1.5,-4.1) {\textbf{verification}\\Times, AtLeast\ldots};
+  \node[comp=acento] at (3.9,-4.1) {\textbf{configuration}\\anotaciones, inyección};
+  \node[comp=acento] at (6.1,-4.1) {\textbf{exceptions}\\Reporter};
+  \node[comp=anot] at (1.2,-5.5) {\code{MockMaker} \; \code{InstantiatorProvider2} \; \code{AnnotationEngine} \; \code{StackTraceCleanerProvider}\\ \code{MemberAccessor} \; \code{DoNotMockEnforcer} \; \code{MockitoLogger} \; \code{PluginSwitch} \; \code{MockResolver}};
+  \node[comp=verde] at (1.2,-7.1) {\textbf{Byte Buddy}: genera bytecode \quad \textbf{Byte Buddy Agent}: Instrumentation API \quad \textbf{Objenesis}: instancia sin constructor};
+  \node[comp=gris] at (1.2,-8.7) {\code{java.lang.instrument} \quad Reflexión \quad \code{java.lang.reflect.Proxy} \quad \code{ThreadLocal} \quad ClassLoaders};
+  % flechas
+  \foreach \a/\b in {c1/c2,c2/c3,c4/c5,c5/c6} \draw[flecha] (\a.south) -- (\b.north);
+  \draw[flecha] (0,-4.7) -- (c4.north);
+\end{tikzpicture}
+\caption{Arquitectura de Mockito por capas}
+\label{fig:capas}
+\end{figure}
+
+\begin{description}
+  \item[1. Prueba.] El código que escribe el tester. Solo usa la capa 2.
+  \item[2. API pública] (paquete \code{org.mockito}). Es lo único que se debería usar. Tiene garantía de compatibilidad entre versiones.
+  \item[3. Núcleo interno] (paquete \code{org.mockito.internal}). Implementa toda la lógica: crear mocks, interceptar llamadas, guardar stubs, verificar y reportar errores. Puede cambiar entre versiones y no debe usarse directamente.
+  \item[4. SPI de plugins] (paquete \code{org.mockito.plugins}). \emph{Service Provider Interface}: puntos de enchufe con los que se puede reemplazar una pieza (por ejemplo, la fábrica de mocks) sin modificar Mockito.
+  \item[5. Bibliotecas externas.] Byte Buddy (creada por Rafael Winterhalter, también mantenedor de Mockito) y Objenesis.
+  \item[6. JVM.] Las capacidades de la plataforma sobre las que todo se apoya.
+\end{description}
+
+\section{Módulos que se distribuyen}
+\begin{table}[H]
+\centering
+\caption{Artefactos de Mockito en Maven Central (grupo \code{org.mockito})}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Artefacto} & \textbf{Para qué sirve}\\
+\midrule
+\code{mockito-core} & El framework completo. Es el único imprescindible.\\
+\code{mockito-junit-jupiter} & Integración con JUnit 5/6: \code{MockitoExtension}, \code{@MockitoSettings} y la inyección de mocks como parámetros de métodos de prueba.\\
+\code{mockito-subclass} & Cambia el \emph{mock maker} por defecto a \emph{subclass} (para entornos donde no se puede usar un agente).\\
+\code{mockito-proxy} & Cambia el \emph{mock maker} por defecto a \emph{proxy} (solo interfaces, sin generación de código).\\
+\code{mockito-android} & Variante para Android (genera código compatible con la máquina virtual de Android).\\
+\code{mockito-errorprone} & Reglas de análisis estático para detectar malos usos de Mockito al compilar.\\
+\code{mockito-bom} & \emph{Bill of materials}: fija las versiones de todos los módulos a la vez.\\
+\code{mockito-inline} & \textbf{Obsoleto}: su función pasó a ser la predeterminada en Mockito 5 (última versión: 5.2.0).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Componentes de la API pública}
+\begin{longtable}{p{0.27\linewidth}p{0.67\linewidth}}
+\caption{Componentes públicos (paquete \code{org.mockito})}\\
+\toprule
+\textbf{Componente} & \textbf{Responsabilidad}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Componente} & \textbf{Responsabilidad}\\
+\midrule
+\endhead
+\code{Mockito} & Punto de entrada. Métodos estáticos: \code{mock}, \code{spy}, \code{when}, \code{verify}, \code{doReturn}\ldots, \code{mockStatic}, \code{mockConstruction}, \code{mockingDetails}. Hereda de \code{ArgumentMatchers}.\\
+\code{BDDMockito} & Alias con estilo \emph{Given/When/Then}: \code{given()}, \code{willReturn()}, \code{then().should()}.\\
+\code{ArgumentMatchers} & Comodines para argumentos: \code{any}, \code{eq}, \code{anyString}, \code{argThat}\ldots\\
+\code{ArgumentMatcher<T>} & Interfaz funcional \code{boolean matches(T arg)} para crear comodines propios.\\
+\code{ArgumentCaptor<T>} & Captura los argumentos reales con que se llamó a un mock.\\
+\code{MockSettings} & Configuración avanzada al crear un mock: nombre, respuesta por defecto, interfaces extra, \code{mockMaker}, \code{useConstructor}, \code{invocationListeners}, \code{strictness}\ldots\\
+\code{Answer<T>} & Interfaz que decide la respuesta de un mock a partir de la invocación: \code{T answer(InvocationOnMock inv)}.\\
+\code{OngoingStubbing<T>} & Lo que devuelve \code{when()}: permite encadenar \code{thenReturn}, \code{thenThrow}, \code{thenAnswer}.\\
+\code{Stubber} & Lo que devuelven \code{doReturn/doThrow/doAnswer/doNothing}; se completa con \code{.when(mock)}.\\
+\code{VerificationMode} & Cómo verificar: \code{times(n)}, \code{never()}, \code{atLeast(n)}, \code{atMost(n)}, \code{only()}, \code{timeout(ms)}.\\
+\code{InOrder} & Verifica el orden de las llamadas entre uno o varios mocks.\\
+\code{MockedStatic<T>}, \code{MockedConstruction<T>} & Controlan la simulación de métodos estáticos y de constructores; se cierran con \code{close()} (\emph{try-with-resources}).\\
+\code{MockingDetails} & ``Radiografía'' de un mock: invocaciones, stubs, configuración, manejador.\\
+\code{@Mock}, \code{@Spy}, \code{@Captor}, \code{@InjectMocks} & Anotaciones que evitan escribir la creación a mano.\\
+\code{MockMakers} & Constantes para elegir la fábrica por mock: \code{INLINE}, \code{SUBCLASS}, \code{PROXY}.\\
+\code{Strictness} & Nivel de exigencia: \code{LENIENT}, \code{WARN}, \code{STRICT\_STUBS}.\\
+\code{MockitoSession} & Ciclo de vida de una prueba: inicia mocks y al final valida el uso y la estrictez.\\
+\code{Answers} & Respuestas por defecto predefinidas (\code{RETURNS\_DEFAULTS}, \code{RETURNS\_DEEP\_STUBS}\ldots).\\
+\bottomrule
+\end{longtable}
+
+\section{Componentes del núcleo interno}
+Esta sección recorre, una por una, las piezas del paquete \code{org.mockito.internal}. La figura~\ref{fig:mapa} muestra cómo se relacionan.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.55cm and 0.6cm,
+  k/.style={draw=#1,fill=#1!10,thick,rounded corners=2pt,font=\scriptsize,align=center,minimum height=0.85cm,minimum width=2.6cm},
+  lab/.style={font=\tiny,fill=white,inner sep=1pt}]
+  \node[k=gris] (test) {Prueba};
+  \node[k=primario,right=of test] (mockito) {\textbf{Mockito}\\(fachada)};
+  \node[k=acento,right=of mockito] (core) {\textbf{MockitoCore}};
+  \node[k=acento,right=of core] (util) {\textbf{MockUtil}\\createMock()};
+  \node[k=anot,below=of util] (maker) {\textbf{MockMaker}\\inline / subclass / proxy};
+  \node[k=verde,below left=0.55cm and -0.6cm of maker] (bb) {\textbf{Byte Buddy}};
+  \node[k=verde,below right=0.55cm and -0.6cm of maker] (obj) {\textbf{Objenesis}};
+  \node[k=primario,below=of core] (settings) {\textbf{MockCreationSettings}\\tipo, nombre, answer\ldots};
+  \node[k=gris,below=2.1cm of maker,minimum width=3cm] (mock) {\textbf{Objeto mock}};
+  \node[k=acento,left=1.2cm of mock] (handler) {\textbf{MockHandler}\\(cadena de 3)};
+  \node[k=acento,below=of handler] (container) {\textbf{InvocationContainer}\\invocaciones + stubs};
+  \node[k=acento,left=1.2cm of handler] (progress) {\textbf{MockingProgress}\\(ThreadLocal)};
+  \node[k=acento,below=of progress] (storage) {\textbf{ArgumentMatcher-}\\\textbf{Storage} (pila)};
+  \node[k=acento,below=of container] (answer) {\textbf{Answer}\\respuesta};
+  \node[k=acento,left=of answer] (vmode) {\textbf{VerificationMode}\\Times, AtLeast\ldots};
+  \node[k=acento,left=of vmode] (reporter) {\textbf{Reporter}\\mensajes de error};
+
+  \draw[flecha] (test) -- (mockito);
+  \draw[flecha] (mockito) -- (core);
+  \draw[flecha] (core) -- (util);
+  \draw[flecha] (core) -- (settings);
+  \draw[flecha] (util) -- (maker);
+  \draw[flecha] (maker) -- (bb);
+  \draw[flecha] (maker) -- (obj);
+  \draw[flecha] (bb) -- (mock);
+  \draw[flecha] (obj) -- (mock);
+  \draw[flecha] (mock) -- node[lab,above]{cada llamada} (handler);
+  \draw[flecha] (handler) -- (container);
+  \draw[flecha] (handler) -- node[lab,above]{consulta} (progress);
+  \draw[flecha] (progress) -- (storage);
+  \draw[flecha] (container) -- (answer);
+  \draw[flecha] (handler.south west) -- (vmode.north);
+  \draw[flecha,dashed] (vmode) -- (reporter);
+  \draw[flecha,dashed] (core.north) to[bend right=25] node[lab,above]{when() / verify()} (progress.north);
+\end{tikzpicture}
+\caption{Mapa de componentes internos y sus relaciones}
+\label{fig:mapa}
+\end{figure}
+
+\subsection{La fachada: \code{Mockito} y \code{MockitoCore}}
+\code{Mockito} es una clase con métodos estáticos pensada para leerse como lenguaje natural. No contiene lógica: cada método delega en una única instancia de \code{org.mockito.internal.MockitoCore}. Este patrón se llama \textbf{fachada} (\emph{facade}): una puerta de entrada simple que esconde un sistema complejo. Así, el equipo de Mockito puede reorganizar el interior sin romper las pruebas de los usuarios.
+
+\subsection{Configuración del mock: \code{MockSettings} y \code{MockCreationSettings}}
+Cuando se escribe \code{mock(PasarelaPago.class)}, internamente se arma una ficha de configuración (\code{MockSettingsImpl}) que luego se valida y se congela como \code{MockCreationSettings}. Contiene:
+\begin{itemize}
+  \item el \textbf{tipo} a simular (\code{typeToMock}) y las interfaces adicionales;
+  \item el \textbf{nombre} del mock (aparece en los mensajes de error);
+  \item la \textbf{respuesta por defecto} (\code{defaultAnswer}), por ejemplo \code{RETURNS\_DEFAULTS};
+  \item la \textbf{instancia espiada}, si es un \code{spy};
+  \item si debe usar un \textbf{constructor real} (\code{useConstructor()});
+  \item la \textbf{estrictez}, los \textbf{listeners} de invocaciones y el \code{mockMaker} elegido;
+  \item si es serializable o \emph{stub-only} (sin registro de invocaciones, para ahorrar memoria).
+\end{itemize}
+
+\subsection{La fábrica: \code{MockUtil.createMock}}
+\code{MockUtil} coordina la creación en tres pasos:
+\begin{enumerate}
+  \item Crea el \textbf{manejador} con \code{MockHandlerFactory.createMockHandler(settings)}.
+  \item Pide al \textbf{\code{MockMaker}} que fabrique el objeto mock y lo conecte con ese manejador.
+  \item Si es un \code{spy}, copia el estado del objeto real al mock con \code{LenientCopyTool} (campo por campo).
+\end{enumerate}
+
+\subsection{\code{MockMaker}: el ``taller'' que fabrica los mocks}
+\code{MockMaker} es un \emph{plugin} (interfaz del paquete \code{org.mockito.plugins}) con tres implementaciones. Es la pieza que más cambió en la historia de Mockito.
+
+\begin{table}[H]
+\centering
+\caption{Las tres implementaciones de \code{MockMaker}}
+\small
+\begin{tabularx}{\linewidth}{lXXX}
+\toprule
+& \textbf{Inline} (por defecto) & \textbf{Subclass} & \textbf{Proxy}\\
+\midrule
+Clase & \code{InlineByteBuddyMockMaker} & \code{SubclassByteBuddyMockMaker} & \code{ProxyMockMaker}\\
+Técnica & Reescribe el bytecode de la clase original (agente + Instrumentation API) & Genera una subclase \code{Tipo\$MockitoMock\$xxxx} con Byte Buddy & \code{java.lang.reflect.Proxy} de la JDK\\
+Clases \code{final} & Sí & No & No\\
+Métodos estáticos & Sí (\code{mockStatic}) & No & No\\
+Constructores & Sí (\code{mockConstruction}) & No & No\\
+Solo interfaces & No & No & Sí\\
+Necesita agente & Sí & No & No\\
+\code{getClass()} del mock & La misma clase & La subclase generada & \code{jdk.proxy2.\$ProxyNN}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Cómo trabaja el \emph{mock maker} inline.}
+\begin{enumerate}
+  \item Al primer uso, \textbf{Byte Buddy Agent} se conecta a la JVM y obtiene la \emph{Instrumentation API} (de ahí la recomendación de pasar \code{-javaagent} en JDK 21 o superior).
+  \item Mockito inyecta en el \emph{classloader} de arranque una pequeña clase puente, \code{MockMethodDispatcher}, visible desde cualquier clase del sistema.
+  \item \code{InlineBytecodeGenerator} \textbf{retransforma} la clase a simular (y sus superclases): al inicio de \emph{cada} método inserta un fragmento de código (\emph{advice}, clase \code{MockMethodAdvice}) que pregunta: ``¿el objeto \code{this} es un mock registrado?''.
+  \item Mockito mantiene un mapa débil (\emph{weak map}) \emph{objeto $\rightarrow$ interceptor} con todos los mocks vivos. Si \code{this} está en el mapa, la llamada se desvía al \code{MockHandler} y el código original \textbf{no se ejecuta}. Si no está, el método corre normalmente.
+\end{enumerate}
+Por eso, con el \emph{mock maker} inline, un mock de \code{CalculadoraDescuentos} \textbf{es} un \code{CalculadoraDescuentos} (misma clase), y aun así los objetos reales de esa clase siguen funcionando con normalidad. Lo comprueba \code{E09\_ArquitecturaInternaTest}. Si se simula una \emph{interfaz}, no hay código que reescribir, así que se genera una clase que la implementa (\code{InventarioRepository\$MockitoMock\$YWsjgKQa}).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\scriptsize,
+  cl/.style={draw=primario,fill=azulclaro,thick,rounded corners=2pt,align=left,minimum width=4.6cm,inner sep=4pt}]
+  \node[font=\small\bfseries] at (-4,1.3) {Inline: se reescribe la clase};
+  \node[cl] (a) at (-4,0) {\textbf{class CalculadoraDescuentos}\\
+    \code{calcularDescuento(s, t) \{}\\
+    \code{\ \ \textcolor{acento}{if (esMock(this))}}\\
+    \code{\ \ \ \ \textcolor{acento}{return handler.handle(...);}}\\
+    \code{\ \ // código original...}\\
+    \code{\}}};
+  \node[font=\small\bfseries] at (4,1.3) {Subclass: se crea una clase hija};
+  \node[cl] (b) at (4,0.55) {\textbf{class CalculadoraDescuentos}\\\code{calcularDescuento(s, t) \{ ... \}}};
+  \node[cl,fill=rojoclaro,draw=acento] (c) at (4,-1.2) {\textbf{class ...\$MockitoMock\$oe8a}\\\code{@Override calcularDescuento(s, t) \{}\\\code{\ \ return handler.handle(...); \}}};
+  \draw[-{Triangle[open]},thick] (c) -- (b);
+\end{tikzpicture}
+\caption{Dos formas de fabricar un mock de una clase concreta}
+\end{figure}
+
+\subsection{El instanciador: Objenesis}
+Una vez que existe la clase del mock, hay que crear un objeto. Llamar al constructor real sería peligroso: podría abrir conexiones o lanzar excepciones. Por eso Mockito usa \textbf{Objenesis} (\code{ObjenesisInstantiator}), una biblioteca que crea instancias \textbf{sin ejecutar ningún constructor}, con mecanismos internos de la JVM. Si se pide explícitamente \code{withSettings().useConstructor(...)}, se usa \code{ConstructorInstantiator}. La elección la hace el plugin \code{InstantiatorProvider2}.
+
+\subsection{El manejador: cadena de \code{MockHandler}}
+Cada mock tiene su propio manejador, formado por tres piezas encadenadas (patrón \emph{decorator}):
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.5cm,font=\scriptsize]
+  \node[caja,minimum width=3.4cm] (m) {Llamada al mock};
+  \node[caja,right=of m,fill=rojoclaro,draw=acento,minimum width=3.4cm] (a) {\textbf{InvocationNotifierHandler}\\avisa a los listeners};
+  \node[caja,right=of a,fill=rojoclaro,draw=acento,minimum width=3.2cm] (b) {\textbf{NullResultGuardian}\\evita \code{null} en primitivos};
+  \node[caja,right=of b,fill=rojoclaro,draw=acento,minimum width=3cm] (c) {\textbf{MockHandlerImpl}\\la lógica principal};
+  \draw[flecha] (m) -- (a); \draw[flecha] (a) -- (b); \draw[flecha] (b) -- (c);
+\end{tikzpicture}
+\caption{Cadena de manejadores de cada mock}
+\end{figure}
+
+\begin{itemize}
+  \item \textbf{\code{InvocationNotifierHandler}} informa de cada llamada a los \code{InvocationListener} registrados (útil para depurar; ver \code{E10}).
+  \item \textbf{\code{NullResultGuardian}} garantiza que un método que devuelve un primitivo (\code{int}, \code{double}\ldots) nunca devuelva \code{null}; en ese caso entrega \code{0} o \code{false} y evita un \code{NullPointerException}.
+  \item \textbf{\code{MockHandlerImpl}} decide si la llamada es parte de un \emph{stubbing}, de una \emph{verificación} o una llamada normal, y actúa en consecuencia. Su algoritmo se detalla en la sección~\ref{sec:recorrido}.
+\end{itemize}
+
+\subsection{La invocación: \code{Invocation} e \code{InvocationMatcher}}
+Cada llamada a un mock se empaqueta en un objeto \code{InterceptedInvocation} que guarda: el mock, el método, los argumentos, una referencia al \emph{método real} (para los spies), la \emph{ubicación} en el código fuente (archivo y línea, para los mensajes de error) y un \emph{número de secuencia} global (para \code{InOrder}).
+
+Un \code{InvocationMatcher} es una invocación ``con comodines'': la invocación más una lista de \code{ArgumentMatcher}, uno por argumento. Es la forma en que Mockito representa ``\code{stockDisponible(cualquier String)}''. Sirve para buscar stubs y para verificar.
+
+\subsection{El apuntador: \code{MockingProgress}}
+\code{MockingProgress} es la \textbf{memoria de trabajo} de Mockito. Hay una por hilo (\code{ThreadSafeMockingProgress} la guarda en un \code{ThreadLocal}), por lo que las pruebas que corren en paralelo en distintos hilos no se mezclan. Guarda:
+\begin{itemize}
+  \item el \textbf{\code{OngoingStubbing} pendiente}: la \emph{última} invocación hecha a \emph{cualquier} mock, lista para que \code{when()} la tome;
+  \item el \textbf{modo de verificación pendiente}: si se acaba de llamar a \code{verify(mock)}, la próxima llamada a ese mock es una verificación, no un uso;
+  \item si hay un \textbf{stubbing en curso} (para detectar \code{when(...)} sin \code{thenReturn});
+  \item el \textbf{almacén de matchers} (\code{ArgumentMatcherStorage});
+  \item los \emph{listeners} del framework.
+\end{itemize}
+
+\begin{atencion}[Consecuencia práctica comprobada]
+Como \code{when()} usa ``la última invocación a un mock del hilo'', el código
+\code{inventario.stockDisponible("P1"); when(listaReal.size()).thenReturn(10);}
+\textbf{programa el mock \code{inventario}}, no la lista real. \code{E09} lo demuestra: después, \code{inventario.stockDisponible("P1")} devuelve \code{10}. Si no hay ninguna invocación pendiente, \code{when()} lanza \code{MissingMethodInvocationException}.
+\end{atencion}
+
+\subsection{El almacén de comodines: \code{ArgumentMatcherStorage} y \code{MatchersBinder}}
+Los comodines no se pasan ``dentro'' del argumento. Cuando Java evalúa \code{anyString()}, este método:
+\begin{enumerate}
+  \item crea un objeto \code{Any} (un \code{ArgumentMatcher});
+  \item lo \textbf{apila} en una pila (\code{java.util.Stack}) de \code{ArgumentMatcherStorageImpl}, en el \code{MockingProgress} del hilo;
+  \item devuelve un valor ficticio del tipo correcto (\code{null}, \code{""}, \code{0}, \code{false}) para que el código compile y se pueda llamar al mock.
+\end{enumerate}
+Cuando el mock recibe la llamada, \code{MatchersBinder} \textbf{vacía la pila} y la asocia a los argumentos:
+\begin{itemize}
+  \item si la pila está vacía, cada argumento real se envuelve en un comparador \code{Equals} (lo hace \code{ArgumentsProcessor});
+  \item si la pila tiene tantos comodines como argumentos, se usan esos;
+  \item si no coinciden, se lanza \code{InvalidUseOfMatchersException} (``\emph{2 matchers expected, 1 recorded}'').
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\scriptsize]
+  \node[font=\small] at (0,1.2) {\code{when(pasarela.cobrar(eq("a"), anyDouble()))}};
+  \foreach \i/\t/\c in {0/{\code{Equals("a")}}/verdeclaro, 1/{\code{Any (double)}}/amarilloclaro} {
+    \node[draw=primario,fill=\c,minimum width=2.8cm,minimum height=0.6cm] at (-4,-\i*0.62) {\t};
+  }
+  \node[font=\scriptsize\bfseries] at (-4,0.55) {Pila (\code{Stack})};
+  \draw[flecha] (-2.4,-0.3) -- node[above]{\code{MatchersBinder}} (0.2,-0.3);
+  \node[draw=acento,fill=rojoclaro,align=left,inner sep=5pt] at (2.9,-0.3) {\textbf{InvocationMatcher}\\\code{cobrar(}\\\code{\ \ Equals("a"),}\\\code{\ \ Any)}};
+  \node[align=left,text width=5cm] at (7.6,-0.3) {Nº de matchers (2) = nº de argumentos (2) \textcolor{verde}{\faCheck}\\[2pt]Con \code{cobrar("a", anyDouble())} habría 1 en la pila para 2 argumentos \textcolor{acento}{\faTimes}};
+\end{tikzpicture}
+\caption{Los comodines viajan por una pila, no dentro de los argumentos}
+\end{figure}
+
+\paragraph{\code{ArgumentCaptor}} es un caso especial: \code{captor.capture()} apila un \code{CapturingMatcher} que acepta cualquier valor \emph{y además lo guarda}. Así, después de \code{verify}, \code{captor.getValue()} devuelve el argumento real.
+
+\subsection{La libreta: \code{InvocationContainer}}
+Cada mock tiene un \code{InvocationContainerImpl} con dos listas:
+\begin{itemize}
+  \item \textbf{Invocaciones registradas} (\code{DefaultRegisteredInvocations}): todo lo que se le pidió al mock, en orden. Es lo que revisa \code{verify}.
+  \item \textbf{Stubs} (\code{LinkedList<StubbedInvocationMatcher>}): pares \emph{InvocationMatcher $\rightarrow$ cola de Answers}. Cada stub nuevo se inserta \textbf{al principio} (\code{addFirst}), y la búsqueda (\code{findAnswerFor}) recorre la lista desde el principio. Por eso \textbf{el último stub gana}.
+\end{itemize}
+Además, al convertir una invocación en stub, \code{addAnswer} \textbf{borra del registro} la llamada ``de ensayo'' hecha dentro de \code{when(...)} (\code{removeLast}), para que no cuente en las verificaciones. \code{E09} comprueba ambos comportamientos.
+
+Cuando un stub tiene varias respuestas (\code{thenReturn(3, 2, 1)}), la cola de \code{Answer} se consume una por una y la última se repite.
+
+\subsection{Las respuestas: \code{Answer}}
+Todo lo que un mock devuelve lo decide un objeto \code{Answer}. \code{thenReturn(5)} crea internamente un \code{Returns(5)}; \code{thenThrow(e)} crea un \code{ThrowsException(e)}; \code{doNothing()}, un \code{DoesNothing}; \code{thenCallRealMethod()}, un \code{CallsRealMethods}. Si no hay stub, se usa la \textbf{respuesta por defecto} del mock:
+
+\begin{table}[H]
+\centering
+\caption{Respuestas por defecto (\code{org.mockito.Answers})}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Respuesta} & \textbf{Comportamiento}\\
+\midrule
+\code{RETURNS\_DEFAULTS} & (predeterminada, clase \code{ReturnsEmptyValues}) \code{0}/\code{false} para primitivos y sus envoltorios, colecciones vacías, \code{Optional.empty()}, \code{Stream.empty()}; \code{null} para el resto.\\
+\code{RETURNS\_SMART\_NULLS} & En lugar de \code{null}, devuelve un objeto que, si se usa, lanza una excepción que indica \emph{qué llamada} lo produjo.\\
+\code{RETURNS\_MOCKS} & Devuelve valores vacíos o, si no es posible, otro mock.\\
+\code{RETURNS\_DEEP\_STUBS} & Devuelve mocks encadenados: permite \code{when(a.getB().getC()).thenReturn(x)}.\\
+\code{CALLS\_REAL\_METHODS} & Ejecuta el método real (es lo que usan los \emph{spies}).\\
+\code{RETURNS\_SELF} & Devuelve el propio mock cuando el tipo coincide (útil para \emph{builders}).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\code{Answer} es también un \textbf{punto de extensión}: cualquier clase que implemente \code{answer(InvocationOnMock)} puede usarse como respuesta. Ejemplo: \code{StockSegunCodigo} en \code{E10}.
+
+\subsection{La verificación: \code{VerificationMode}}
+\code{verify(mock, times(2))} no verifica nada todavía: \code{MockitoCore.verify} envuelve el modo en un \code{MockAwareVerificationMode}, lo deja en \code{MockingProgress} (``la próxima llamada a \emph{este} mock es una verificación'') y devuelve el mismo mock. Cuando el test llama a \code{.descontarStock("P1", 2)} sobre ese mock, el manejador ve el modo pendiente y ejecuta la verificación.
+
+\begin{table}[H]
+\centering
+\caption{Modos de verificación y sus clases}
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{API} & \textbf{Clase} & \textbf{Qué comprueba}\\
+\midrule
+\code{times(n)}, \code{never()} & \code{Times} & Exactamente $n$ invocaciones que coinciden.\\
+\code{atLeast(n)} / \code{atMost(n)} & \code{AtLeast} / \code{AtMost} & Al menos / como mucho $n$.\\
+\code{only()} & \code{Only} & Es la única invocación del mock.\\
+\code{verifyNoInteractions} & \code{NoInteractions} & El mock no recibió ninguna llamada.\\
+\code{verifyNoMoreInteractions} & \code{NoMoreInteractions} & Todas las llamadas ya fueron verificadas.\\
+\code{inOrder.verify} & \code{InOrderWrapper} & Orden relativo, usando el número de secuencia.\\
+\code{timeout(ms)}, \code{after(ms)} & \code{Timeout}, \code{After} & Para código asíncrono: espera hasta que se cumpla.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Para contar, \code{InvocationsFinder} busca en el \code{InvocationContainer} las invocaciones que coinciden con el \code{InvocationMatcher}. Las que se verifican quedan \textbf{marcadas} (así sabe \code{verifyNoMoreInteractions} cuáles faltan). Si el conteo falla, se genera el error adecuado: \code{WantedButNotInvoked}, \code{TooFewActualInvocations}, \code{TooManyActualInvocations} o \code{NeverWantedButInvoked}. Si hay una llamada \emph{parecida} con otros argumentos, se genera \code{ArgumentsAreDifferent}, que muestra la diferencia.
+
+\subsection{Los mensajes: \code{Reporter} y limpieza de trazas}
+Una de las razones de la popularidad de Mockito son sus mensajes de error, que explican qué pasó y cómo corregirlo. Todos se construyen en \code{org.mockito.internal.exceptions.Reporter}. Además, \code{DefaultStackTraceCleaner} (plugin \code{StackTraceCleanerProvider}) elimina de la traza de la excepción las líneas internas de Mockito y Byte Buddy, para que el primer renglón apunte a \emph{tu} código.
+
+\section{Recorrido paso a paso: qué pasa en cada línea}
+\label{sec:recorrido}
+Se sigue ahora una prueba completa y se muestra qué componente actúa en cada momento.
+
+\begin{lstlisting}[caption={Prueba de referencia para el recorrido}]
+InventarioRepository inv = mock(InventarioRepository.class);   // (A) creación
+when(inv.stockDisponible("P1")).thenReturn(5);                  // (B) stubbing
+int stock = inv.stockDisponible("P1");                          // (C) uso (lo haría el SUT)
+inv.descontarStock("P1", 2);
+verify(inv).descontarStock("P1", 2);                            // (D) verificación
+\end{lstlisting}
+
+\subsection{(A) Creación del mock}
+\begin{figure}[H]
+\centering
+\resizebox{0.95\linewidth}{!}{%
+\begin{sequencediagram}
+  \newthread{t}{:Prueba}
+  \newinst[0.6]{m}{:MockitoCore}
+  \newinst[0.6]{u}{:MockUtil}
+  \newinst[0.6]{h}{:MockHandlerFactory}
+  \newinst[0.6]{k}{:MockMaker (inline)}
+  \newinst[0.6]{o}{:Objenesis}
+  \begin{call}{t}{mock(Inventario.class)}{m}{mock}
+    \begin{call}{m}{validar settings}{m}{}\end{call}
+    \begin{call}{m}{createMock(settings)}{u}{mock}
+      \begin{call}{u}{createMockHandler()}{h}{handler}\end{call}
+      \begin{call}{u}{createMock(settings, handler)}{k}{mock}
+        \begin{call}{k}{genera/instrumenta clase}{k}{}\end{call}
+        \begin{call}{k}{newInstance(clase)}{o}{objeto}\end{call}
+        \begin{call}{k}{registra objeto $\rightarrow$ handler}{k}{}\end{call}
+      \end{call}
+    \end{call}
+  \end{call}
+\end{sequencediagram}}
+\caption{Secuencia de creación de un mock}
+\end{figure}
+
+\begin{enumerate}
+  \item \code{Mockito.mock} delega en \code{MockitoCore.mock}, que arma y \textbf{valida} la configuración (por ejemplo, rechaza tipos marcados con \code{@DoNotMock} o combinaciones inválidas).
+  \item \code{MockUtil.createMock} crea la cadena de \code{MockHandler}.
+  \item El \code{MockMaker} inline genera una clase que implementa la interfaz (o reescribe la clase si es concreta). Byte Buddy guarda las clases generadas en caché, así que el segundo mock del mismo tipo es mucho más rápido.
+  \item Objenesis crea el objeto sin constructor.
+  \item El \code{MockMaker} anota en su mapa que ese objeto es un mock y cuál es su manejador.
+\end{enumerate}
+
+\subsection{(B) Stubbing: \code{when(inv.stockDisponible("P1")).thenReturn(5)}}
+Java evalúa las expresiones \textbf{de dentro hacia fuera}. Primero se ejecuta \code{inv.stockDisponible("P1")} y solo después \code{when(...)}.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{sequencediagram}
+  \newthread{t}{:Prueba}
+  \newinst[0.5]{mk}{:inv (mock)}
+  \newinst[0.5]{h}{:MockHandlerImpl}
+  \newinst[0.5]{mp}{:MockingProgress}
+  \newinst[0.5]{ic}{:InvocationContainer}
+  \newinst[0.5]{os}{:OngoingStubbing}
+  \begin{call}{t}{stockDisponible("P1")}{mk}{0}
+    \begin{call}{mk}{handle(invocación)}{h}{0}
+      \begin{call}{h}{pull matchers (vacía)}{mp}{[]}\end{call}
+      \begin{call}{h}{setInvocationForPotentialStubbing}{ic}{}\end{call}
+      \begin{call}{h}{reportOngoingStubbing}{mp}{}\end{call}
+      \begin{call}{h}{findAnswerFor}{ic}{null}\end{call}
+    \end{call}
+  \end{call}
+  \begin{call}{t}{when(0)}{mp}{ongoing}
+  \end{call}
+  \begin{call}{t}{thenReturn(5)}{os}{}
+    \begin{call}{os}{addAnswer(Returns(5))}{ic}{}\end{call}
+  \end{call}
+\end{sequencediagram}}
+\caption{Secuencia de \code{when(...).thenReturn(...)}}
+\end{figure}
+
+\begin{enumerate}
+  \item \textbf{La llamada de ensayo.} \code{inv.stockDisponible("P1")} llega al \code{MockHandlerImpl}.
+  \item \textbf{Comodines.} \code{MatchersBinder} vacía la pila de matchers. Está vacía, así que \code{"P1"} se envuelve en \code{Equals("P1")} y se arma el \code{InvocationMatcher} \code{stockDisponible(Equals("P1"))}.
+  \item \textbf{Validación de estado.} \code{MockingProgress.validateState()} comprueba que no quedó nada a medias (por ejemplo, un \code{when} sin \code{thenReturn}).
+  \item \textbf{¿Es una verificación?} No hay modo de verificación pendiente, así que es una llamada normal.
+  \item \textbf{Registro.} La invocación se guarda en el \code{InvocationContainer} como ``posible stubbing''.
+  \item \textbf{Aviso al apuntador.} Se crea un \code{OngoingStubbingImpl} y se deja en \code{MockingProgress} como \emph{última invocación}.
+  \item \textbf{Respuesta.} Se busca un stub; no hay ninguno, así que responde el \code{RETURNS\_DEFAULTS}: \code{0}.
+  \item \textbf{\code{when(0)}.} El argumento \code{0} se ignora. \code{MockitoCore.when} marca ``stubbing en curso'' y \textbf{toma} el \code{OngoingStubbing} pendiente de \code{MockingProgress}. Si no hubiera ninguno, lanzaría \code{MissingMethodInvocationException}.
+  \item \textbf{\code{thenReturn(5)}.} Crea un \code{Returns(5)} y llama a \code{InvocationContainer.addAnswer}, que (a) borra la llamada de ensayo del registro, (b) valida que \code{5} sea compatible con el tipo de retorno (si no, \code{WrongTypeOfReturnValue}) y (c) inserta el stub al inicio de la lista.
+\end{enumerate}
+
+\begin{idea}[Por qué los métodos \code{void} usan \code{doXxx()}]
+\code{when()} necesita recibir \emph{un valor} (el resultado de la llamada de ensayo). Un método \code{void} no devuelve nada, así que \code{when(notificador.enviar(...))} no compila. La familia \code{doThrow()/doAnswer()/doNothing()/doReturn()} invierte el orden: \code{doThrow(e).when(notificador)} deja las respuestas preparadas en el \code{InvocationContainer} del mock (\code{setAnswersForStubbing}) y devuelve el mock. La siguiente llamada, \code{.enviar(...)}, es detectada por el manejador (\code{hasAnswersForStubbing()}) y convertida directamente en stub, sin ejecutar nada.
+\end{idea}
+
+\subsection{(C) Uso del mock desde el código bajo prueba}
+Cuando el SUT llama a \code{inv.stockDisponible("P1")}, se repiten los pasos 1 a 6. En el paso 7, \code{findAnswerFor} recorre la lista de stubs, encuentra que \code{stockDisponible(Equals("P1"))} coincide y ejecuta su \code{Answer}: devuelve \code{5}. Antes, si el stub tiene un \code{ArgumentCaptor}, captura los argumentos. Con \code{STRICT\_STUBS}, el \emph{listener} de estrictez anota que ese stub \textbf{fue usado}. Si encuentra un stub del mismo método pero con \emph{otros} argumentos, lanza \code{PotentialStubbingProblem}.
+
+La llamada a \code{descontarStock("P1", 2)} no tiene stub y es \code{void}: se registra y no hace nada.
+
+\subsection{(D) Verificación}
+\begin{figure}[H]
+\centering
+\resizebox{0.92\linewidth}{!}{%
+\begin{sequencediagram}
+  \newthread{t}{:Prueba}
+  \newinst[0.5]{c}{:MockitoCore}
+  \newinst[0.5]{mp}{:MockingProgress}
+  \newinst[0.5]{h}{:MockHandlerImpl}
+  \newinst[0.5]{v}{:Times(1)}
+  \newinst[0.5]{ic}{:InvocationContainer}
+  \begin{call}{t}{verify(inv)}{c}{inv}
+    \begin{call}{c}{verificationStarted(Times(1))}{mp}{}\end{call}
+  \end{call}
+  \begin{call}{t}{inv.descontarStock("P1", 2)}{h}{}
+    \begin{call}{h}{pullVerificationMode}{mp}{Times(1)}\end{call}
+    \begin{call}{h}{verify(datos)}{v}{}
+      \begin{call}{v}{buscar coincidencias}{ic}{1 invocación}\end{call}
+    \end{call}
+  \end{call}
+\end{sequencediagram}}
+\caption{Secuencia de \code{verify(mock).metodo(...)}}
+\end{figure}
+
+\begin{enumerate}
+  \item \code{verify(inv)} comprueba que \code{inv} sea un mock (si no, \code{NotAMockException}), deja \code{Times(1)} pendiente en \code{MockingProgress} y devuelve el propio \code{inv}.
+  \item La llamada \code{.descontarStock("P1", 2)} llega al manejador, que toma el modo pendiente y comprueba que se refiere a \emph{este} mock.
+  \item Se construye el \code{InvocationMatcher} (con los comodines, si los hay) y \code{Times} cuenta las invocaciones registradas que coinciden. Hay 1, así que la verificación pasa y la invocación queda marcada como verificada. Esta llamada \textbf{no} se registra como un uso más del mock.
+\end{enumerate}
+
+\section{Ciclo de vida de una prueba con \code{MockitoExtension}}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.35cm,font=\scriptsize,
+  fase/.style={draw=#1,fill=#1!12,thick,rounded corners=3pt,minimum width=2.45cm,minimum height=2.2cm,align=center,text width=2.3cm}]
+  \node[fase=primario] (f1) {\textbf{1. beforeEach}\\[2pt]crea \code{MockitoSession}; procesa \code{@Mock}, \code{@Spy}, \code{@Captor}; inyecta \code{@InjectMocks}};
+  \node[fase=anot,right=of f1] (f2) {\textbf{2. Arrange}\\[2pt]stubs con \code{when} / \code{given} / \code{doXxx}};
+  \node[fase=verde,right=of f2] (f3) {\textbf{3. Act}\\[2pt]el SUT llama a los mocks; se registran las invocaciones};
+  \node[fase=acento,right=of f3] (f4) {\textbf{4. Assert}\\[2pt]\code{assertEquals}, \code{verify}, \code{InOrder}, captores};
+  \node[fase=gris,right=of f4] (f5) {\textbf{5. afterEach}\\[2pt]\code{finishMocking}: valida el uso de Mockito y reporta stubs innecesarios};
+  \foreach \a/\b in {f1/f2,f2/f3,f3/f4,f4/f5} \draw[flecha] (\a) -- (\b);
+\end{tikzpicture}
+\caption{Ciclo de vida de una prueba con \code{MockitoExtension}}
+\end{figure}
+
+\code{MockitoExtension} (del módulo \code{mockito-junit-jupiter}) se engancha a JUnit mediante sus \emph{callbacks}:
+\begin{itemize}
+  \item \textbf{\code{beforeEach}}: ejecuta
+\begin{center}\code{Mockito.mockitoSession().initMocks(this).strictness(STRICT\_STUBS).startMocking()}\end{center} La estrictez se puede cambiar con \code{@MockitoSettings(strictness = ...)}.
+  \item \textbf{Resolución de parámetros}: permite recibir mocks como parámetros del método de prueba (\code{void prueba(@Mock Notificador n)}).
+  \item \textbf{\code{afterEach}}: llama a \code{session.finishMocking(errorDeLaPrueba)}, que valida que no quedó un stubbing a medias ni matchers sueltos y, si la prueba pasó, reporta los stubs no usados.
+\end{itemize}
+
+\subsection{Procesamiento de anotaciones e inyección}
+\code{initMocks} usa el componente \code{InjectingAnnotationEngine}, que trabaja en dos fases:
+
+\begin{enumerate}
+  \item \textbf{Creación} (\code{IndependentAnnotationEngine} + \code{SpyAnnotationEngine}): para cada campo con \code{@Mock} llama a \code{MockAnnotationProcessor}, que traduce los atributos de la anotación (\code{name}, \code{answer}, \code{strictness}, \code{mockMaker}\ldots) a un \code{MockSettings} y crea el mock. \code{@Captor} crea un \code{ArgumentCaptor} y \code{@Spy} envuelve la instancia del campo, o la crea con el constructor sin argumentos si el campo está vacío.
+  \item \textbf{Inyección} (\code{DefaultInjectionEngine}) sobre cada campo \code{@InjectMocks}, probando estrategias en orden:
+  \begin{enumerate}
+    \item \textbf{\code{ConstructorInjection}}: elige el constructor con \textbf{más parámetros} y pasa los mocks cuyo tipo coincide (\code{null} si no hay mock para un parámetro). Si tiene éxito, \emph{no se aplican} las demás estrategias. Es la que se usa con \code{PedidoService}.
+    \item \textbf{\code{PropertyAndSetterInjection}}: si la clase no tiene ese constructor, la crea con el constructor sin argumentos y asigna los mocks por \emph{setter} o directamente al campo, primero por \textbf{tipo} y, si hay ambigüedad, por \textbf{nombre}.
+  \end{enumerate}
+\end{enumerate}
+
+\begin{atencion}[La inyección falla en silencio]
+Si \code{@InjectMocks} no encuentra cómo inyectar un mock, no lanza un error: el campo queda en \code{null} y la prueba falla después con un \code{NullPointerException}. Por eso se recomienda la inyección por constructor, que es explícita.
+\end{atencion}
+
+\section{Estrictez: el ``control de calidad'' de las pruebas}
+El componente \code{Strictness} define cuán exigente es Mockito con los stubs:
+
+\begin{table}[H]
+\centering
+\caption{Niveles de estrictez}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Nivel} & \textbf{Comportamiento}\\
+\midrule
+\code{LENIENT} & Permisivo: no se queja de nada (comportamiento clásico de Mockito 1).\\
+\code{WARN} & Imprime avisos de stubs no usados o con argumentos distintos.\\
+\code{STRICT\_STUBS} & (por defecto con \code{MockitoExtension}) Hace fallar la prueba si (a) un stub nunca se usó: \code{UnnecessaryStubbingException}, al final; o (b) el código llamó al método con argumentos distintos de los programados: \code{PotentialStubbingProblem}, en el momento. También hace que \code{verifyNoMoreInteractions} ignore las llamadas ya ``cubiertas'' por stubs.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Técnicamente, un \emph{listener} (\code{DefaultStubbingLookupListener}) se entera de cada búsqueda de stub en el paso 7 del recorrido y marca los stubs usados. Al terminar la prueba, \code{UniversalTestListener} revisa cuáles quedaron sin usar. \code{lenient()} marca un stub individual como exento.
+
+\section{Mocks estáticos y de constructores}
+Estas dos capacidades solo existen con el \emph{mock maker} inline:
+\begin{itemize}
+  \item \textbf{\code{mockStatic(Clase.class)}}: el \emph{advice} insertado en los métodos estáticos consulta un registro \textbf{por hilo} de ``clases con estáticos simulados''. Devuelve un \code{MockedStatic} que, al cerrarse (\code{close()} o fin del \code{try}), elimina la clase del registro. Fuera del bloque, o en otro hilo, el método vuelve a ser real.
+  \item \textbf{\code{mockConstruction(Clase.class)}}: el \emph{advice} en los constructores hace que cada \code{new Clase()} dentro del bloque produzca un mock. Se puede configurar cada mock creado con una función de inicialización (\code{E10}).
+\end{itemize}
+
+\begin{atencion}[Por qué deben cerrarse]
+Si un \code{MockedStatic} no se cierra, la simulación sigue activa en ese hilo y contamina las pruebas siguientes. Mockito lanza un error si se intenta registrar dos veces la misma clase en el mismo hilo.
+\end{atencion}
+
+\section{Extensibilidad: el sistema de plugins}
+Mockito permite reemplazar componentes sin modificar su código. Hay tres niveles:
+
+\begin{enumerate}
+  \item \textbf{Por mock}: \code{withSettings().mockMaker(MockMakers.SUBCLASS)}, \code{.defaultAnswer(...)}, \code{.invocationListeners(...)}, o los atributos equivalentes de \code{@Mock}.
+  \item \textbf{Por componente de usuario}: implementar \code{Answer} o \code{ArgumentMatcher} (\code{E10}).
+  \item \textbf{Global, por plugin}: crear en \code{src/test/resources/mockito-extensions/} un archivo con el nombre de la interfaz del plugin y, dentro, la clase o el alias que la implementa. \code{PluginLoader} y \code{PluginRegistry} leen esos archivos al iniciar. Si no encuentran ninguno, usan las implementaciones por defecto (\code{DefaultMockitoPlugins}).
+\end{enumerate}
+
+\begin{lstlisting}[style=bash,caption={Cambiar globalmente el \code{MockMaker} mediante el sistema de plugins}]
+# archivo: src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker
+mock-maker-subclass          # alias: mock-maker-inline | mock-maker-subclass | mock-maker-proxy
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+\caption{Plugins disponibles (\code{org.mockito.plugins})}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Plugin} & \textbf{Qué se puede reemplazar}\\
+\midrule
+\code{MockMaker} & La forma de fabricar mocks.\\
+\code{InstantiatorProvider2} & Cómo se instancian los objetos (Objenesis por defecto).\\
+\code{AnnotationEngine} & El procesamiento de \code{@Mock}, \code{@Spy}, etc.\\
+\code{StackTraceCleanerProvider} & Qué líneas se eliminan de las trazas de error.\\
+\code{MemberAccessor} & Cómo se leen y escriben campos por reflexión.\\
+\code{DoNotMockEnforcer} & Qué tipos está prohibido simular (anotación \code{@DoNotMock}).\\
+\code{MockitoLogger} & Dónde se escriben los avisos.\\
+\code{MockResolver} & Cómo reconocer un mock envuelto por otro framework (p.\,ej., proxies de Spring).\\
+\code{PluginSwitch} & Activar o desactivar plugins según condiciones.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Demostración práctica de la arquitectura}
+\label{sec:demo-arquitectura}
+Los ejemplos \code{E09} y \code{E10} (14 pruebas) hacen visibles los componentes. Esta es la salida real al ejecutarlos:
+
+\begin{lstlisting}[style=bash,caption={Salida de \code{E09} y \code{E10} (consola)}]
+--- Radiografía del mock ---
+¿Es mock?        true
+Tipo simulado:   InventarioRepository
+Respuesta def.:  RETURNS_DEFAULTS
+MockHandler:     InvocationNotifierHandler
+Invocaciones:    [inventarioRepository.stockDisponible("P1");, inventarioRepository.descontarStock("P1", 2);]
+Stubs:           [inventarioRepository.stockDisponible("P1"); stubbed with: [Returns: 5]]
+Clase del mock de clase concreta: bo.edu.umss.pedidos.servicio.CalculadoraDescuentos
+Clase del mock de interfaz:       bo.edu.umss.pedidos.puertos.InventarioRepository$MockitoMock$YWsjgKQa
+INLINE   -> bo.edu.umss.pedidos.servicio.CalculadoraDescuentos
+SUBCLASS -> bo.edu.umss.pedidos.servicio.CalculadoraDescuentos$MockitoMock$oe8a1izx
+PROXY    -> jdk.proxy2.$Proxy87
+notificador.enviar("a@umss.edu.bo", "uno");
+notificador.enviar("b@umss.edu.bo", "dos");
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+\caption{Qué componente demuestra cada prueba}
+\small
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Prueba} & \textbf{Componente y comportamiento demostrado}\\
+\midrule
+\multicolumn{2}{l}{\textit{E09\_ArquitecturaInternaTest}}\\
+Radiografía de un mock & \code{MockingDetails}: settings, cadena de \code{MockHandler}, invocaciones y stubs del \code{InvocationContainer}.\\
+Llamada de ensayo & \code{InvocationContainer.addAnswer} borra la invocación hecha dentro de \code{when()}.\\
+El último stub gana & La lista de stubs se llena con \code{addFirst}.\\
+Inline no crea subclase & \code{MockMaker} inline: el mock de una clase concreta tiene la misma clase; su código real no se ejecuta.\\
+Spy copia el estado & \code{LenientCopyTool} copia los campos; el objeto original no cambia.\\
+\code{when()} toma la última invocación & \code{MockingProgress} (\code{ThreadLocal}) guarda la última invocación de \emph{cualquier} mock.\\
+\code{when()} sin invocación & \code{MockitoCore.when} lanza \code{MissingMethodInvocationException}.\\
+Pila de matchers & \code{ArgumentMatcherStorage} + \code{MatchersBinder}: ``2 matchers expected, 1 recorded''.\\
+\midrule
+\multicolumn{2}{l}{\textit{E10\_ComponentesExtensiblesTest}}\\
+Answer propio & Punto de extensión \code{Answer} como respuesta por defecto.\\
+ArgumentMatcher propio & Punto de extensión \code{ArgumentMatcher} con \code{toString()} descriptivo.\\
+Tres MockMaker & \code{MockMakers.INLINE}, \code{SUBCLASS}, \code{PROXY}: clase resultante de cada uno.\\
+Subclass y \code{final} & El \emph{mock maker} subclass no puede simular clases \code{final}; el inline sí.\\
+InvocationListener & \code{InvocationNotifierHandler} avisa a los listeners de cada llamada.\\
+\code{mockConstruction} & \code{new} dentro del bloque devuelve un mock; fuera vuelve a ser real.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Diagnóstico: qué componente produce cada error}
+Conocer la arquitectura permite entender los errores de Mockito en lugar de memorizarlos:
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.29\linewidth}>{\raggedright\arraybackslash}p{0.23\linewidth}>{\raggedright\arraybackslash}p{0.4\linewidth}}
+\caption{Errores frecuentes, componente que los detecta y causa}\\
+\toprule
+\textbf{Excepción} & \textbf{Componente} & \textbf{Causa y solución}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Excepción} & \textbf{Componente} & \textbf{Causa y solución}\\
+\midrule
+\endhead
+\code{MissingMethod\allowbreak Invocation\allowbreak Exception} & \code{MockitoCore.when} & \code{when()} no encontró ninguna invocación pendiente: el objeto no es un mock, o el método es \code{final}/\code{static} con un \emph{mock maker} que no lo soporta.\\
+\code{UnfinishedStubbing\allowbreak Exception} & \code{MockingProgress} & Un \code{when(...)} sin \code{thenReturn}, o se llamó a otro mock dentro de \code{thenReturn(...)}.\\
+\code{InvalidUseOfMatchers\allowbreak Exception} & \code{MatchersBinder} & Se mezclaron valores y comodines, o se usó un comodín fuera de \code{when}/\code{verify}. Todos los argumentos deben ser comodines (usar \code{eq()}).\\
+\code{NullPointerException} con \code{any()} & Java + pila de matchers & \code{any()}/\code{argThat()} devuelven \code{null}, que no se puede convertir a primitivo. Usar \code{anyInt()}, \code{doubleThat()}\ldots\\
+\code{WrongTypeOfReturnValue} & \code{InvocationContainer} & El valor de \code{thenReturn} no es compatible con el tipo de retorno, o \code{when()} tomó una invocación pendiente de otro método (ver \code{E09}).\\
+\code{UnnecessaryStubbing\allowbreak Exception} & Estrictez: \code{UniversalTestListener} & Un stub nunca se usó. Borrarlo o marcarlo con \code{lenient()}.\\
+\code{PotentialStubbing\allowbreak Problem} & Estrictez: \code{DefaultStubbingLookupListener} & El SUT llamó al método con argumentos distintos de los programados.\\
+\code{WantedButNotInvoked} & \code{Times} / \code{InvocationsFinder} & Se esperaba una llamada que nunca ocurrió.\\
+\code{ArgumentsAreDifferent} & \code{Times} & Hubo una llamada al método, pero con otros argumentos; el mensaje muestra la diferencia.\\
+\code{TooManyActual\allowbreak Invocations} / \code{TooFewActual\allowbreak Invocations} & \code{Times} & El número de llamadas no coincide con \code{times(n)}.\\
+\code{NoInteractionsWanted} & \code{NoMoreInteractions} & Quedan llamadas sin verificar.\\
+\code{NotAMockException} & \code{MockitoCore.verify} & Se pasó a \code{verify} un objeto real.\\
+\code{MockitoException: Cannot mock/spy class} & \code{MockMaker} & Tipo no simulable con el \emph{mock maker} actual (p.\,ej., clase \code{final} con \emph{subclass}), o tipo marcado con \code{@DoNotMock}.\\
+\bottomrule
+\end{longtable}
+
+\section{Resumen del capítulo}
+\begin{idea}[Mockito en cinco ideas]
+\begin{enumerate}
+  \item Un \textbf{mock} es un objeto fabricado en ejecución (por Byte Buddy y Objenesis, a través de un \code{MockMaker}) cuyos métodos no ejecutan código real: \textbf{todas las llamadas van a su \code{MockHandler}}.
+  \item El \code{MockHandler} \textbf{registra} cada llamada en el \code{InvocationContainer} y \textbf{responde} con el \code{Answer} del stub que coincide o, si no hay, con la respuesta por defecto.
+  \item \code{when()}, \code{verify()} y los comodines se coordinan a través de \code{MockingProgress}, una memoria \textbf{por hilo} que recuerda la última invocación, el modo de verificación pendiente y la pila de matchers.
+  \item Las reglas ``raras'' de Mockito (todos los argumentos con matchers, \code{doXxx} para \code{void}, \code{doubleThat} para primitivos) son \textbf{consecuencias directas} de este diseño.
+  \item La arquitectura es \textbf{extensible}: el \emph{mock maker}, las respuestas, los comodines y otros componentes se pueden reemplazar mediante \code{MockSettings} o el sistema de plugins.
+\end{enumerate}
+\end{idea}
+
+% =====================================================================
+\chapter{SRS -- Especificación de Requisitos del Sistema de Ejemplo}
+\label{cap:srs}
+% =====================================================================
+
+Antes de diseñar (SDD) y antes de probar hay que saber \textbf{qué debe hacer el sistema}. Ese es el papel de la \textbf{SRS} (\emph{Software Requirements Specification}). Este capítulo sigue la estructura de la norma \textbf{IEEE 830-1998}, actualizada por \textbf{ISO/IEC/IEEE 29148:2018} (\emph{Requirements engineering}).
+
+\begin{idea}[¿Por qué la SRS es clave para las pruebas?]
+La SRS es la \textbf{base de prueba} de la caja negra: cada caso de prueba de caja negra nace de una frase de este documento. Por eso cada requisito se redacta de forma \textbf{verificable}, con un identificador único (RF-xx) y un \textbf{criterio de aceptación}. Así, cualquier persona puede comprobar si el sistema lo cumple.
+\end{idea}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.5cm and 0.9cm,font=\small]
+  \node[caja,fill=verdeclaro,draw=verde,minimum width=2.8cm,minimum height=1.1cm] (srs) {\textbf{SRS}\\\scriptsize ¿qué debe hacer?};
+  \node[caja,right=of srs,minimum width=2.8cm,minimum height=1.1cm] (sdd) {\textbf{SDD}\\\scriptsize ¿cómo está construido?};
+  \node[caja,right=of sdd,fill=amarilloclaro,draw=anot,minimum width=2.8cm,minimum height=1.1cm] (cod) {\textbf{Código}\\\scriptsize \code{PedidoService}};
+  \node[caja,below=1.1cm of srs,fill=gray!10,draw=gris,minimum width=2.8cm,minimum height=1.1cm] (cn) {\textbf{Caja negra}\\\scriptsize casos desde la SRS};
+  \node[caja,below=1.1cm of cod,fill=gray!10,draw=gris,minimum width=2.8cm,minimum height=1.1cm] (cb) {\textbf{Caja blanca}\\\scriptsize casos desde el código};
+  \draw[flecha] (srs) -- (sdd); \draw[flecha] (sdd) -- (cod);
+  \draw[flecha] (srs) -- node[left,font=\scriptsize]{base de prueba} (cn);
+  \draw[flecha] (cod) -- node[right,font=\scriptsize]{base de prueba} (cb);
+  \draw[flecha,dashed] (cn) -- node[below,font=\scriptsize]{matriz de trazabilidad} (cb);
+\end{tikzpicture}
+\caption{Relación entre SRS, SDD, código y pruebas}
+\end{figure}
+
+\section{Introducción}
+\subsection{Propósito}
+Especificar los requisitos funcionales y no funcionales del \emph{Servicio de Pedidos}, un componente de una tienda en línea que procesa compras. Está dirigido al equipo de desarrollo (que lo implementa), al equipo de pruebas (que diseña los casos de caja negra a partir de él) y al auditor (que verifica la trazabilidad).
+
+\subsection{Alcance}
+El producto se llama \textbf{Servicio de Pedidos} (\code{PedidoService}). Recibe un pedido, verifica que haya stock, calcula el descuento, cobra al cliente mediante una pasarela de pagos externa, actualiza el inventario, registra el pedido y notifica al cliente por correo. \textbf{No} incluye la interfaz de usuario, la base de datos, el banco ni el servidor de correo, que son sistemas externos con los que el servicio se comunica mediante interfaces.
+
+\subsection{Definiciones, acrónimos y abreviaturas}
+\begin{description}[itemsep=0pt]
+  \item[Pedido] Solicitud de compra de un cliente, con uno o más \emph{items}.
+  \item[Item] Línea de un pedido: un producto y la cantidad solicitada.
+  \item[Subtotal] Suma de \emph{precio $\times$ cantidad} de todos los items, en bolivianos (Bs).
+  \item[Descuento] Monto en Bs que se resta del subtotal según las reglas RN-01 y RN-02.
+  \item[Total] Subtotal $-$ descuento. Es el monto que se cobra.
+  \item[Cliente VIP] Cliente con beneficios adicionales de descuento.
+  \item[Stub / Mock] Dobles de prueba (ver capítulo~\ref{cap:arquitectura}).
+  \item[RF / RNF / RN / CU / IE] Requisito funcional / no funcional / regla de negocio / caso de uso / interfaz externa.
+\end{description}
+
+\subsection{Referencias}
+IEEE 830-1998; ISO/IEC/IEEE 29148:2018; IEEE 1016-2009 (SDD, capítulo~\ref{cap:sdd}).
+
+\subsection{Visión general del documento}
+La sección 2 describe el producto de forma general. La sección 3 detalla las interfaces externas, los requisitos funcionales con sus criterios de aceptación, las reglas de negocio, los casos de uso y los requisitos no funcionales. La sección 4 registra las observaciones de la revisión.
+
+\section{Descripción general}
+\subsection{Perspectiva del producto}
+El Servicio de Pedidos es un componente de la \emph{capa de negocio}. Lo invoca una aplicación web y, a su vez, usa cuatro servicios externos: el inventario y el registro de pedidos (base de datos), la pasarela de pagos (banco) y el notificador (correo). El diagrama de contexto se presenta en el SDD (figura~\ref{fig:contexto}).
+
+\subsection{Funciones del producto}
+\begin{enumerate}[label=F\arabic*.]
+  \item Validar que el pedido tenga productos.
+  \item Verificar el stock de cada producto.
+  \item Calcular el descuento según el monto y el tipo de cliente.
+  \item Cobrar el total al cliente.
+  \item Actualizar el inventario, registrar el pedido y notificar al cliente.
+  \item Consultar un pedido existente.
+\end{enumerate}
+
+\subsection{Actores}
+\begin{table}[H]
+\centering
+\caption{Actores del sistema}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Actor} & \textbf{Descripción}\\
+\midrule
+Aplicación web (cliente) & Envía el pedido y el tipo de cliente; recibe el pedido procesado o un error.\\
+Pasarela de pagos & Sistema externo del banco; aprueba o rechaza cobros.\\
+Sistema de inventario & Informa del stock y lo descuenta.\\
+Servidor de correo & Entrega las notificaciones al cliente.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Restricciones}
+\begin{itemize}
+  \item Lenguaje Java 21 o superior; las pruebas usan JUnit 6 y Mockito 5.
+  \item Los montos se expresan en bolivianos y se redondean a 2 decimales.
+  \item Las pruebas unitarias no pueden acceder a sistemas reales (RNF-03).
+\end{itemize}
+
+\subsection{Suposiciones y dependencias}
+\begin{itemize}
+  \item La pasarela de pagos responde siempre con ``aprobado'' o ``rechazado'' y un mensaje.
+  \item El inventario informa el stock actual de un producto por su código.
+  \item Las cantidades de cada item son enteros positivos (ver observación OBS-02).
+\end{itemize}
+
+\section{Requisitos específicos}
+
+\subsection{Interfaces externas}
+\begin{table}[H]
+\centering
+\caption{Interfaces externas (serán los puntos de sustitución por mocks)}
+\small
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{ID} & \textbf{Interfaz} & \textbf{Operaciones}\\
+\midrule
+IE-01 & Inventario & \code{stockDisponible(codigo) : int}; \code{descontarStock(codigo, cantidad)}\\
+IE-02 & Pasarela de pagos & \code{cobrar(email, monto) : ResultadoPago(aprobado, codigoTransaccion, mensaje)}\\
+IE-03 & Notificador & \code{enviar(destinatario, mensaje)}\\
+IE-04 & Registro de pedidos & \code{guardar(pedido) : Pedido}; \code{buscarPorId(id) : Optional<Pedido>}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Requisitos funcionales}
+Cada requisito se presenta como una ficha con su criterio de aceptación en formato \emph{Dado / Cuando / Entonces}, que es directamente convertible en un caso de prueba.
+
+\newcommand{\fichareq}[8]{%
+\begin{tcolorbox}[colback=white,colframe=verde,fonttitle=\bfseries,title={#1 -- #2},arc=2pt,boxrule=0.6pt,left=4pt,right=4pt,top=2pt,bottom=2pt,breakable]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.6cm}X@{}}
+Descripción & #3\\
+Entradas & #4\\
+Proceso & #5\\
+Salidas & #6\\
+Prioridad & #7\\
+Criterio de aceptación & #8\\
+\end{tabularx}
+\end{tcolorbox}}
+
+\fichareq{RF-01}{Rechazar pedidos sin productos}
+{El sistema debe rechazar un pedido que no contenga ningún item.}
+{Pedido con lista de items vacía.}
+{Validar la cantidad de items antes de cualquier otra operación.}
+{Error ``El pedido no tiene items''. No se consulta el inventario ni se cobra.}
+{Alta}
+{\textbf{Dado} un pedido sin items, \textbf{cuando} se procesa, \textbf{entonces} se produce un error de pedido inválido y no se realiza ningún cobro.}
+
+\fichareq{RF-02}{Verificar stock antes de cobrar}
+{Antes de cobrar, el sistema debe comprobar que el stock de \emph{cada} producto sea suficiente para la cantidad pedida (RN-03).}
+{Items del pedido; stock informado por IE-01.}
+{Para cada item, comparar stock disponible con cantidad.}
+{Si algún item no tiene stock suficiente: error ``Stock insuficiente para el producto X''.}
+{Alta}
+{\textbf{Dado} un item con cantidad 2 y stock 1, \textbf{cuando} se procesa el pedido, \textbf{entonces} se produce el error de stock insuficiente y no se cobra. \textbf{Dado} stock = cantidad, \textbf{entonces} el stock se considera suficiente.}
+
+\fichareq{RF-03}{Calcular el descuento}
+{El sistema debe calcular el descuento del pedido según RN-01 y RN-02.}
+{Subtotal (Bs) y tipo de cliente (REGULAR o VIP).}
+{Determinar el porcentaje según el tramo del subtotal; sumar 5\,\% si es VIP; multiplicar y redondear.}
+{Monto del descuento en Bs con 2 decimales. Si el subtotal es negativo: error.}
+{Alta}
+{\textbf{Dado} un subtotal de 500 Bs y un cliente REGULAR, \textbf{cuando} se calcula el descuento, \textbf{entonces} es 50,00 Bs. \textbf{Dado} el mismo subtotal y un cliente VIP, \textbf{entonces} es 75,00 Bs.}
+
+\fichareq{RF-04}{Pago rechazado}
+{Si la pasarela rechaza el cobro, el pedido debe quedar en estado RECHAZADO, se debe notificar al cliente con el motivo y \textbf{no} se debe modificar el inventario ni registrar el pedido.}
+{Respuesta de IE-02 con \code{aprobado = false} y un mensaje.}
+{Cambiar el estado y enviar la notificación.}
+{Pedido en estado RECHAZADO; correo ``Pago rechazado: <motivo>''.}
+{Alta}
+{\textbf{Dado} un pedido válido con stock y un banco que rechaza con ``Sin fondos'', \textbf{cuando} se procesa, \textbf{entonces} el estado es RECHAZADO, se envía ``Pago rechazado: Sin fondos'' y no se descuenta stock.}
+
+\fichareq{RF-05}{Pago aprobado}
+{Si la pasarela aprueba el cobro del total, el sistema debe descontar el stock de cada item, marcar el pedido como PAGADO con su total, registrarlo y enviar una confirmación con el código de transacción.}
+{Respuesta de IE-02 con \code{aprobado = true} y código de transacción.}
+{Descontar stock (IE-01), registrar (IE-04), notificar (IE-03).}
+{Pedido PAGADO con total = subtotal $-$ descuento; correo de confirmación.}
+{Alta}
+{\textbf{Dado} un pedido de 2 monitores de 250 Bs para un cliente REGULAR y un banco que aprueba, \textbf{cuando} se procesa, \textbf{entonces} se cobran 450 Bs, el estado es PAGADO, se descuentan 2 unidades y se envía la confirmación.}
+
+\fichareq{RF-06}{Consultar un pedido}
+{El sistema debe devolver un pedido a partir de su identificador.}
+{Identificador del pedido.}
+{Buscar en IE-04.}
+{El pedido, o el error ``No existe el pedido <id>''.}
+{Media}
+{\textbf{Dado} un identificador inexistente, \textbf{cuando} se consulta, \textbf{entonces} se produce el error de pedido no encontrado.}
+
+\subsection{Reglas de negocio}
+\begin{table}[H]
+\centering
+\caption{Reglas de negocio}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{ID} & \textbf{Regla}\\
+\midrule
+RN-01 & Porcentaje de descuento por tramo de subtotal: menor que 100 Bs $\rightarrow$ 0\,\%; de 100 a 499,99 Bs $\rightarrow$ 5\,\%; 500 Bs o más $\rightarrow$ 10\,\%. Un subtotal negativo es inválido.\\
+RN-02 & Un cliente VIP recibe 5 puntos porcentuales adicionales en cualquier tramo.\\
+RN-03 & El stock es suficiente si \emph{stock disponible $\geq$ cantidad pedida}.\\
+RN-04 & Total = subtotal $-$ descuento. Todos los montos se redondean a 2 decimales.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Casos de uso}
+\begin{tcolorbox}[colback=white,colframe=primario,fonttitle=\bfseries,title={CU-01 -- Procesar pedido},arc=2pt,boxrule=0.6pt,breakable]
+\small
+\textbf{Actor principal:} aplicación web. \quad \textbf{Actores secundarios:} inventario, pasarela de pagos, notificador.\\
+\textbf{Precondición:} el pedido existe en memoria con estado CREADO.\\
+\textbf{Postcondición de éxito:} pedido PAGADO, stock actualizado, pedido registrado, cliente notificado.
+
+\textbf{Flujo básico}
+\begin{enumerate}[itemsep=0pt]
+  \item La aplicación web envía el pedido y el tipo de cliente.
+  \item El sistema verifica que el pedido tenga items (RF-01).
+  \item Para cada item, el sistema consulta el stock y comprueba que sea suficiente (RF-02).
+  \item El sistema calcula el subtotal, el descuento (RF-03) y el total.
+  \item El sistema solicita a la pasarela el cobro del total.
+  \item La pasarela aprueba el cobro.
+  \item El sistema descuenta el stock de cada item, marca el pedido como PAGADO, lo registra y envía la confirmación (RF-05).
+\end{enumerate}
+\textbf{Flujos alternativos}
+\begin{description}[itemsep=0pt]
+  \item[FA-1 (paso 2):] el pedido no tiene items $\rightarrow$ error; fin del caso de uso.
+  \item[FA-2 (paso 3):] un producto no tiene stock suficiente $\rightarrow$ error de stock; fin, sin cobrar.
+  \item[FA-3 (paso 6):] la pasarela rechaza el cobro $\rightarrow$ estado RECHAZADO y notificación del motivo (RF-04); fin.
+\end{description}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white,colframe=primario,fonttitle=\bfseries,title={CU-02 -- Consultar pedido},arc=2pt,boxrule=0.6pt]
+\small
+\textbf{Flujo básico:} (1) se envía el identificador; (2) el sistema lo busca en el registro; (3) devuelve el pedido.\\
+\textbf{FA-1 (paso 2):} no existe $\rightarrow$ error ``No existe el pedido <id>'' (RF-06).
+\end{tcolorbox}
+
+\subsection{Requisitos no funcionales}
+\begin{table}[H]
+\centering
+\caption{Requisitos no funcionales}
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{ID} & \textbf{Atributo} & \textbf{Requisito y forma de verificarlo}\\
+\midrule
+RNF-01 & Testabilidad & Toda dependencia externa se accede mediante una interfaz recibida por constructor. \emph{Verificación:} revisión del diseño (SDD).\\
+RNF-02 & Calidad & La capa de servicio debe tener una cobertura de ramas de al menos 90\,\%. \emph{Verificación:} reporte JaCoCo.\\
+RNF-03 & Aislamiento & Las pruebas unitarias no deben acceder a red, base de datos ni correo reales. \emph{Verificación:} todas las IE se sustituyen por mocks.\\
+RNF-04 & Rendimiento de pruebas & La suite completa de pruebas unitarias debe ejecutarse en menos de 5 segundos. \emph{Verificación:} tiempo informado por JUnit.\\
+RNF-05 & Mantenibilidad & Cada requisito funcional debe tener al menos una prueba automatizada trazable. \emph{Verificación:} matriz de trazabilidad (SDD).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Observaciones de la revisión de la SRS}
+Al diseñar las pruebas se hizo una \textbf{revisión de calidad} de la SRS: cada requisito debe ser completo, no ambiguo y verificable. Esa revisión encontró estos vacíos, que se registran como hallazgos:
+
+\begin{table}[H]
+\centering
+\caption{Hallazgos de la revisión de la SRS}
+\small
+\begin{tabularx}{\linewidth}{lXX}
+\toprule
+\textbf{ID} & \textbf{Hallazgo} & \textbf{Recomendación}\\
+\midrule
+OBS-01 & La SRS no dice qué hacer si el pedido es \emph{nulo}. El código lo rechaza (programación defensiva), pero ese comportamiento no está especificado. Se detectó en la caja blanca (camino C1). & Añadir a RF-01: ``pedidos nulos o sin productos''.\\
+OBS-02 & No se especifica qué pasa con cantidades 0 o negativas. El código no las valida: una cantidad negativa produce un subtotal negativo y el error aparece en el cálculo de descuento. & Añadir un requisito de validación de cantidades ($\geq 1$).\\
+OBS-03 & No se especifica el comportamiento si el tipo de cliente es nulo. El código lo trata como REGULAR. & Definir si es un error o un valor por defecto.\\
+OBS-04 & No se define qué hacer si el registro del pedido falla \emph{después} de cobrar. & Definir una compensación (reembolso) o una transacción.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{nota}[Relevancia para la auditoría]
+Estos hallazgos muestran que diseñar pruebas también sirve para \textbf{auditar los requisitos}: al intentar escribir un caso de prueba, el tester descubre situaciones que nadie especificó.
+\end{nota}
+
+% =====================================================================
+\chapter{SDD -- Documento de Diseño del Sistema de Ejemplo}
+\label{cap:sdd}
+% =====================================================================
+
+Este capítulo sigue la estructura de la norma \textbf{IEEE 1016-2009} (\emph{Software Design Descriptions}), que organiza el diseño en \emph{puntos de vista} (\emph{viewpoints}) dirigidos a las inquietudes de cada parte interesada. Parte de los requisitos de la SRS (capítulo~\ref{cap:srs}) y describe \emph{cómo} se construye el sistema para cumplirlos. El sistema se diseñó con la \textbf{testabilidad} (RNF-01) como requisito principal, porque su finalidad es demostrar Mockito.
+
+\section{Introducción}
+\subsection{Propósito}
+Describir la arquitectura y el diseño detallado del \emph{Servicio de Pedidos}, un componente que procesa las compras de una tienda en línea, y documentar las decisiones de diseño que permiten probarlo unitariamente con Mockito.
+
+\subsection{Alcance}
+El componente valida pedidos, verifica el stock, calcula descuentos, cobra mediante una pasarela de pagos, actualiza el inventario, guarda el pedido y notifica al cliente. La persistencia, el banco y el correo quedan fuera del alcance y se modelan como interfaces (\emph{puertos}).
+
+\subsection{Definiciones}
+\begin{description}[itemsep=0pt]
+  \item[SUT] \emph{System Under Test}: clase bajo prueba (\code{PedidoService}).
+  \item[Puerto] Interfaz que abstrae un sistema externo (arquitectura hexagonal).
+  \item[Mock] Doble de prueba creado con Mockito.
+\end{description}
+
+\subsection{Partes interesadas e inquietudes}
+\begin{table}[H]
+\centering
+\caption{Partes interesadas del diseño}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Parte interesada} & \textbf{Inquietud principal}\\
+\midrule
+Desarrollador & Estructura de clases, dependencias y responsabilidades.\\
+Tester / QA & Puntos de sustitución (dónde usar mocks), caminos del código y requisitos verificables.\\
+Auditor de sistemas & Trazabilidad requisito $\rightarrow$ prueba, evidencia de cobertura y aislamiento respecto de producción.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Requisitos de referencia}
+Los requisitos que este diseño debe satisfacer están en la SRS: RF-01 a RF-06, RN-01 a RN-04 y RNF-01 a RNF-05. La tabla~\ref{tab:diseno-req} muestra qué elemento del diseño atiende a cada uno.
+
+\begin{table}[H]
+\centering
+\caption{Requisito $\rightarrow$ elemento de diseño}
+\label{tab:diseno-req}
+\small
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Requisito} & \textbf{Elemento de diseño que lo atiende}\\
+\midrule
+RF-01, RF-02, RF-04, RF-05 & \code{PedidoService.procesarPedido} (punto de vista de algoritmo)\\
+RF-03, RN-01, RN-02, RN-04 & \code{CalculadoraDescuentos.calcularDescuento}\\
+RF-06 & \code{PedidoService.obtenerPedido} + \code{PedidoRepository.buscarPorId}\\
+RNF-01 & Puertos \code{InventarioRepository}, \code{PasarelaPago}, \code{Notificador}, \code{PedidoRepository} inyectados por constructor\\
+RNF-03 & Los mismos puertos: son los puntos de sustitución por mocks\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Punto de vista de contexto}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1cm and 1.6cm]
+  \node[caja,minimum width=3.8cm,minimum height=1.4cm,fill=amarilloclaro,draw=anot] (sys) {\textbf{Servicio de Pedidos}\\\scriptsize(\code{PedidoService})};
+  \node[caja,left=2cm of sys,minimum width=2.4cm] (cli) {\faUser\ Cliente /\\Aplicación web};
+  \node[ext,above right=0.4cm and 1.8cm of sys,minimum width=3cm] (bd) {\faDatabase\ Base de datos\\\scriptsize inventario y pedidos};
+  \node[ext,right=1.8cm of sys,minimum width=3cm] (banco) {\faUniversity\ Banco /\\\scriptsize pasarela de pagos};
+  \node[ext,below right=0.4cm and 1.8cm of sys,minimum width=3cm] (smtp) {\faEnvelope\ Servidor\\\scriptsize de correo};
+  \draw[flecha] (cli) -- node[above,font=\scriptsize]{pedido} (sys);
+  \draw[flecha] (sys) -- (bd);
+  \draw[flecha] (sys) -- (banco);
+  \draw[flecha] (sys) -- (smtp);
+  \begin{scope}[on background layer]
+    \node[draw=acento,dashed,thick,rounded corners,fit=(bd)(banco)(smtp),inner sep=8pt,
+          label={[font=\scriptsize\bfseries,text=acento]above:Reemplazados por mocks}] {};
+  \end{scope}
+\end{tikzpicture}
+\caption{Diagrama de contexto. Los sistemas externos (línea discontinua) se sustituyen por mocks en las pruebas.}
+\label{fig:contexto}
+\end{figure}
+
+\section{Punto de vista de composición y lógico}
+El diseño aplica una arquitectura en capas con \emph{puertos} (interfaces) al estilo hexagonal. La figura~\ref{fig:clases} muestra el diagrama de clases.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\scriptsize]
+  \node[clase,fill=amarilloclaro,rectangle split part fill={amarilloclaro,white,white},draw=anot] (svc) at (0,0) {
+    \textbf{PedidoService}
+    \nodepart{second}
+    - inventario : InventarioRepository\\
+    - pasarela : PasarelaPago\\
+    - notificador : Notificador\\
+    - pedidoRepository : PedidoRepository\\
+    - calculadora : CalculadoraDescuentos
+    \nodepart{third}
+    + procesarPedido(Pedido, TipoCliente) : Pedido\\
+    + obtenerPedido(String) : Pedido};
+
+  \node[interfaz] (inv) at (-5.2,-4.3) {\textit{«interface»}\\\textbf{InventarioRepository}\nodepart{second}+ stockDisponible(String) : int\\+ descontarStock(String, int)};
+  \node[interfaz] (pas) at (-1.6,-4.3) {\textit{«interface»}\\\textbf{PasarelaPago}\nodepart{second}+ cobrar(String, double)\\\quad : ResultadoPago};
+  \node[interfaz] (not) at (1.6,-4.3) {\textit{«interface»}\\\textbf{Notificador}\nodepart{second}+ enviar(String, String)};
+  \node[interfaz] (rep) at (5.0,-4.3) {\textit{«interface»}\\\textbf{PedidoRepository}\nodepart{second}+ guardar(Pedido) : Pedido\\+ buscarPorId(String)\\\quad : Optional<Pedido>};
+  \node[clase] (calc) at (6.2,0.4) {\textbf{CalculadoraDescuentos}\nodepart{second}\nodepart{third}+ calcularDescuento(double,\\\quad TipoCliente) : double};
+
+  \node[clase] (ped) at (-2.8,-7.6) {\textbf{Pedido}\nodepart{second}- id, emailCliente\\- items : List<ItemPedido>\\- estado : EstadoPedido\\- total : double\nodepart{third}+ crear(String, List) \{static\}};
+  \node[clase] (item) at (1.0,-7.6) {\textit{«record»}\\\textbf{ItemPedido}\nodepart{second}producto, cantidad\nodepart{third}+ subtotal() : double};
+  \node[clase] (prod) at (4.4,-7.6) {\textit{«record»}\\\textbf{Producto}\nodepart{second}codigo, nombre, precio\nodepart{third}};
+  \node[clase,rectangle split parts=2] (res) at (-6.9,-7.6) {\textit{«record»}\\\textbf{ResultadoPago}\nodepart{second}aprobado, codigoTransaccion,\\mensaje};
+  \node[clase,rectangle split parts=2] (est) at (-5.6,0.4) {\textit{«enum»}\\\textbf{EstadoPedido}\nodepart{second}CREADO, PAGADO,\\RECHAZADO};
+  \node[clase,rectangle split parts=2] (tipo) at (-5.6,-1.6) {\textit{«enum»}\\\textbf{TipoCliente}\nodepart{second}REGULAR, VIP};
+
+  \foreach \n in {inv,pas,not,rep} \draw[-{Diamond[open,length=3mm]}] (\n.north) -- (svc.south);
+  \draw[-{Diamond[open,length=3mm]}] (calc.west) -- (svc.east |- calc.west);
+  \draw[-{Stealth[open]},dashed] (svc.west) -- ++(-0.6,0) |- (est.east);
+  \draw[-{Stealth[open]},dashed] (svc.west) ++(0,-0.3) -- ++(-0.8,0) |- (tipo.east);
+  \draw[-{Diamond[length=3mm]}] (item.west) -- node[above]{1..*} (ped.east);
+  \draw[-{Stealth[open]}] (item.east) -- (prod.west);
+  \draw[-{Stealth[open]},dashed] (pas.south) -- ++(0,-0.6) -| (res.north);
+\end{tikzpicture}
+\caption{Diagrama de clases del Servicio de Pedidos (interfaces en verde = puertos \emph{mockeables})}
+\label{fig:clases}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Paquetes del sistema}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Paquete} & \textbf{Responsabilidad}\\
+\midrule
+\code{modelo} & Entidades y objetos de valor: \code{Pedido}, \code{ItemPedido}, \code{Producto}, \code{ResultadoPago}, enumeraciones y excepciones de negocio.\\
+\code{puertos} & Interfaces hacia sistemas externos. \textbf{Son los puntos donde Mockito inyecta los dobles.}\\
+\code{servicio} & Lógica de negocio: \code{PedidoService} (orquestación) y \code{CalculadoraDescuentos} (reglas puras).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Punto de vista de dependencias}
+\code{PedidoService} depende solo de \textbf{abstracciones}, según el principio de inversión de dependencias (la ``D'' de SOLID), y las recibe todas por constructor:
+\begin{lstlisting}[caption={Inyección por constructor en \code{PedidoService}}]
+public PedidoService(InventarioRepository inventario, PasarelaPago pasarela,
+                     Notificador notificador, PedidoRepository pedidoRepository,
+                     CalculadoraDescuentos calculadora) { ... }
+\end{lstlisting}
+Gracias a esto, \code{@InjectMocks} puede construir el servicio con cinco mocks sin modificar el código de producción.
+
+\section{Punto de vista de interacción}
+La figura~\ref{fig:secuencia} muestra el escenario principal (RF-05) del método \code{procesarPedido}.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{sequencediagram}
+  \newthread{t}{:Prueba}
+  \newinst[0.8]{s}{:PedidoService}
+  \newinst[0.6]{i}{:Inventario\textsuperscript{mock}}
+  \newinst[0.6]{c}{:Calculadora}
+  \newinst[0.6]{p}{:Pasarela\textsuperscript{mock}}
+  \newinst[0.6]{r}{:PedidoRepo\textsuperscript{mock}}
+  \newinst[0.6]{n}{:Notificador\textsuperscript{mock}}
+  \begin{call}{t}{procesarPedido(p, tipo)}{s}{pedido PAGADO}
+    \begin{sdblock}{loop}{por cada item}
+      \begin{call}{s}{stockDisponible(cod)}{i}{stock}\end{call}
+    \end{sdblock}
+    \begin{call}{s}{calcularDescuento(sub, tipo)}{c}{desc}\end{call}
+    \begin{call}{s}{cobrar(email, total)}{p}{aprobado}\end{call}
+    \begin{sdblock}{loop}{por cada item}
+      \begin{call}{s}{descontarStock(cod, cant)}{i}{}\end{call}
+    \end{sdblock}
+    \begin{call}{s}{guardar(pedido)}{r}{pedido}\end{call}
+    \begin{call}{s}{enviar(email, msg)}{n}{}\end{call}
+  \end{call}
+\end{sequencediagram}}
+\caption{Diagrama de secuencia de \code{procesarPedido} (pago aprobado)}
+\label{fig:secuencia}
+\end{figure}
+
+\section{Punto de vista de estados}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm and 3cm,
+  estado/.style={draw=primario,fill=azulclaro,rounded corners=8pt,thick,minimum width=2.6cm,minimum height=0.9cm,font=\small\bfseries}]
+  \node[circle,fill=black,minimum size=3mm,inner sep=0] (ini) {};
+  \node[estado,right=1.2cm of ini] (cre) {CREADO};
+  \node[estado,above right=0.2cm and 3cm of cre,fill=verdeclaro,draw=verde] (pag) {PAGADO};
+  \node[estado,below right=0.2cm and 3cm of cre,fill=rojoclaro,draw=acento] (rec) {RECHAZADO};
+  \draw[flecha] (ini) -- node[above,font=\scriptsize]{crear} (cre);
+  \draw[flecha] (cre) -- node[above,sloped,font=\scriptsize]{pago aprobado} (pag);
+  \draw[flecha] (cre) -- node[below,sloped,font=\scriptsize]{pago rechazado} (rec);
+\end{tikzpicture}
+\caption{Diagrama de estados del pedido}
+\end{figure}
+
+\section{Punto de vista de algoritmo}
+\begin{lstlisting}[caption={Método \code{procesarPedido} con sus decisiones marcadas (D1--D6)},label={lst:sut}]
+public Pedido procesarPedido(Pedido pedido, TipoCliente tipoCliente) {
+    if (pedido == null || pedido.getItems().isEmpty()) {                 // D1, D2
+        throw new IllegalArgumentException("El pedido no tiene items");
+    }
+    double subtotal = 0;
+    for (ItemPedido item : pedido.getItems()) {                          // D3
+        String codigo = item.producto().codigo();
+        if (inventario.stockDisponible(codigo) < item.cantidad()) {      // D4
+            throw new StockInsuficienteException(codigo);
+        }
+        subtotal += item.subtotal();
+    }
+    double descuento = calculadora.calcularDescuento(subtotal, tipoCliente);
+    double total = subtotal - descuento;
+
+    ResultadoPago pago = pasarela.cobrar(pedido.getEmailCliente(), total);
+    if (!pago.aprobado()) {                                              // D5
+        pedido.setEstado(EstadoPedido.RECHAZADO);
+        notificador.enviar(pedido.getEmailCliente(), "Pago rechazado: " + pago.mensaje());
+        return pedido;
+    }
+    for (ItemPedido item : pedido.getItems()) {                          // D6
+        inventario.descontarStock(item.producto().codigo(), item.cantidad());
+    }
+    pedido.setEstado(EstadoPedido.PAGADO);
+    pedido.setTotal(total);
+    Pedido guardado = pedidoRepository.guardar(pedido);
+    notificador.enviar(pedido.getEmailCliente(), "Pedido " + pedido.getId()
+            + " confirmado. Total: " + total + " Bs. Transacción: " + pago.codigoTransaccion());
+    return guardado;
+}
+\end{lstlisting}
+
+\section{Diseño de las pruebas}
+\begin{table}[H]
+\centering
+\caption{Estrategia de dobles por dependencia}
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{Dependencia} & \textbf{Doble} & \textbf{Motivo}\\
+\midrule
+\code{InventarioRepository} & Mock & Evita la base de datos; permite fijar cualquier stock.\\
+\code{PasarelaPago} & Mock & Evita cobros reales; permite simular aprobaciones y rechazos.\\
+\code{Notificador} & Mock & Evita enviar correos; permite verificar el mensaje.\\
+\code{PedidoRepository} & Mock & Evita la base de datos; \code{thenAnswer} devuelve el mismo pedido.\\
+\code{CalculadoraDescuentos} & Real / Spy / Mock & Real en caja negra; Mock en caja blanca para aislar \code{procesarPedido}; Spy para verificar la llamada sin perder la lógica.\\
+\code{GeneradorId} (estático) & \code{mockStatic} & Hace determinista el identificador aleatorio.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Matriz de trazabilidad}
+La matriz relaciona cada requisito de la SRS con el elemento de diseño y con los casos de prueba que lo verifican (capítulos~\ref{cap:proceso} a~\ref{cap:cajablanca}):
+
+\begin{table}[H]
+\centering
+\caption{Trazabilidad SRS $\rightarrow$ diseño $\rightarrow$ casos de prueba}
+\small
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{Requisito} & \textbf{Diseño} & \textbf{Casos de prueba}\\
+\midrule
+RF-01 & \code{procesarPedido} (D2) & R1 (caja negra); CB-C2 (caja blanca)\\
+(OBS-01) & \code{procesarPedido} (D1) & CB-C1: rama no especificada en la SRS\\
+RF-02, RN-03 & \code{procesarPedido} (D3, D4) & R2, L1 (caja negra); CB-C3, CB-C4 (caja blanca)\\
+RF-03, RN-01/02/04 & \code{calcularDescuento} & CD-01 a CD-15 (caja negra); K1 a K5 (caja blanca)\\
+RF-04 & \code{procesarPedido} (D5) & R3 (caja negra); CB-C5 (caja blanca); E06\\
+RF-05 & \code{procesarPedido} (D6) & R4 (caja negra); CB-C6, CB-C7 (caja blanca); Paso4, Paso5; E03, E07\\
+RF-06 & \code{obtenerPedido} & E02 (existente e inexistente)\\
+RNF-02 & -- & Reporte JaCoCo: 100\,\% de ramas (capítulo~\ref{cap:resultados})\\
+RNF-03 & puertos & Todas las pruebas: las dependencias externas son mocks\\
+RNF-04 & -- & Suite completa en 1,3 s (capítulo~\ref{cap:resultados})\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Justificación de las decisiones de diseño}
+\begin{enumerate}
+  \item \textbf{Interfaces para lo externo}: permiten sustituir la implementación sin tocar el SUT y también cambiar de proveedor (otro banco) en producción.
+  \item \textbf{Inyección por constructor} en vez de \code{new} dentro del servicio: si \code{PedidoService} creara sus dependencias internamente, Mockito no podría reemplazarlas.
+  \item \textbf{Reglas de descuento en una clase pura}: \code{CalculadoraDescuentos} no tiene dependencias, así que se prueba sin mocks. En \code{PedidoService} se puede simular para aislar la orquestación.
+  \item \textbf{Objetos de valor como \code{record}}: son inmutables y fáciles de construir en las pruebas, por lo que no necesitan mocks.
+\end{enumerate}
+
+% =====================================================================
+\chapter{Ejemplos prácticos de uso}
+% =====================================================================
+
+El proyecto está en la carpeta \code{ejemplos-mockito/}. Los ejemplos del paquete \code{basico} recorren la API de menor a mayor complejidad.
+
+\section{Ciclo básico: crear, programar, ejecutar, verificar}
+\begin{lstlisting}[caption={\code{E01\_PrimerMockTest} (extracto)}]
+InventarioRepository inventario = mock(InventarioRepository.class);   // 1. crear
+
+when(inventario.stockDisponible("P-001")).thenReturn(25);             // 2. programar
+when(inventario.stockDisponible("P-002")).thenReturn(3, 2, 1);        //    consecutivas
+
+assertEquals(25, inventario.stockDisponible("P-001"));                // 3. ejecutar
+assertEquals(0, inventario.stockDisponible("OTRO"));                  //    valor por defecto
+
+inventario.descontarStock("P-001", 2);
+verify(inventario).descontarStock("P-001", 2);                        // 4. verificar
+verify(inventario, never()).descontarStock("P-999", 1);
+\end{lstlisting}
+
+\section{Anotaciones e inyección}
+\begin{lstlisting}[caption={\code{E02\_AnotacionesTest} (extracto)}]
+@ExtendWith(MockitoExtension.class)
+class E02_AnotacionesTest {
+    @Mock InventarioRepository inventario;
+    @Mock PasarelaPago pasarela;
+    @Mock Notificador notificador;
+    @Mock PedidoRepository pedidoRepository;
+    @Mock CalculadoraDescuentos calculadora;
+    @InjectMocks PedidoService servicio;   // se construye con los 5 mocks
+
+    @Test
+    void obtenerPedidoInexistenteLanzaExcepcion() {
+        when(pedidoRepository.buscarPorId("NO-EXISTE")).thenReturn(Optional.empty());
+        assertThrows(PedidoNoEncontradoException.class,
+                     () -> servicio.obtenerPedido("NO-EXISTE"));
+    }
+}
+\end{lstlisting}
+
+\section{Argument matchers y ArgumentCaptor}
+\label{sec:matchers}
+\begin{lstlisting}[caption={\code{E03\_ArgumentMatchersYCaptorTest} (extracto)}]
+when(inventario.stockDisponible(anyString())).thenReturn(10);
+when(pasarela.cobrar(eq("luis@umss.edu.bo"), anyDouble()))
+        .thenReturn(ResultadoPago.aprobado("TX-999"));
+when(pedidoRepository.guardar(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
+
+servicio.procesarPedido(pedido, TipoCliente.REGULAR);   // laptop de 600 Bs
+
+verify(pasarela).cobrar(anyString(), doubleThat(monto -> monto == 540.0));
+verify(notificador).enviar(eq("luis@umss.edu.bo"), contains("TX-999"));
+
+verify(notificador).enviar(anyString(), mensajeCaptor.capture());
+assertTrue(mensajeCaptor.getValue().startsWith("Pedido PED-7 confirmado"));
+\end{lstlisting}
+
+\begin{nota}[Lección aprendida]
+En la primera versión de este ejemplo usamos \code{argThat(monto -> monto == 540.0)}. Como el parámetro es un \code{double} primitivo, \code{argThat} devolvió \code{null} y Java lanzó un \code{NullPointerException} al convertirlo. Además, el \emph{matcher} quedó ``colgado'' en la pila interna y provocó un \code{InvalidUseOfMatchersException} en otra prueba. La corrección fue usar \code{doubleThat}.
+\end{nota}
+
+\section{Excepciones y métodos void}
+\begin{lstlisting}[caption={\code{E04\_ExcepcionesYVoidTest} (extracto)}]
+when(inventario.stockDisponible("P-ERR"))
+        .thenThrow(new IllegalStateException("Base de datos caída"));
+
+doThrow(new RuntimeException("SMTP no disponible"))       // método void
+        .when(notificador).enviar(anyString(), anyString());
+
+doAnswer(inv -> { bandejaFalsa.add(inv.getArgument(0) + ": " + inv.getArgument(1));
+                  return null; })
+        .when(notificador).enviar(anyString(), anyString());
+\end{lstlisting}
+
+\section{Spies (mocks parciales)}
+\begin{lstlisting}[caption={\code{E05\_SpyTest} (extracto)}]
+CalculadoraDescuentos calculadora = spy(new CalculadoraDescuentos());
+doReturn(99.0).when(calculadora).calcularDescuento(1000, TipoCliente.VIP);
+
+assertEquals(99.0, calculadora.calcularDescuento(1000, TipoCliente.VIP));    // simulado
+assertEquals(50.0, calculadora.calcularDescuento(500, TipoCliente.REGULAR)); // real
+\end{lstlisting}
+
+\section{Estilo BDD}
+\begin{lstlisting}[caption={\code{E06\_BDDMockitoTest} (extracto)}]
+// GIVEN
+given(inventario.stockDisponible("TEC-01")).willReturn(5);
+given(pasarela.cobrar(anyString(), anyDouble()))
+        .willReturn(ResultadoPago.rechazado("Fondos insuficientes"));
+// WHEN
+Pedido resultado = servicio.procesarPedido(pedido, TipoCliente.VIP);
+// THEN
+assertThat(resultado.getEstado()).isEqualTo(EstadoPedido.RECHAZADO);
+then(pasarela).should().cobrar("vip@umss.edu.bo", 270.0);   // 300 - 10 %
+then(inventario).should(never()).descontarStock(anyString(), anyInt());
+\end{lstlisting}
+
+\section{Orden de llamadas y métodos estáticos}
+\begin{lstlisting}[caption={\code{E07\_OrdenYStaticTest} (extracto)}]
+InOrder orden = inOrder(inventario, pasarela, pedidoRepository, notificador);
+orden.verify(inventario).stockDisponible("MOU-01");
+orden.verify(pasarela).cobrar("eva@umss.edu.bo", 50.0);   // se cobra ANTES de
+orden.verify(inventario).descontarStock("MOU-01", 1);     // descontar el stock
+orden.verify(pedidoRepository).guardar(pedido);
+orden.verify(notificador).enviar(anyString(), anyString());
+
+try (MockedStatic<GeneradorId> generador = mockStatic(GeneradorId.class)) {
+    generador.when(GeneradorId::nuevoId).thenReturn("PED-FIJO");
+    assertEquals("PED-FIJO", Pedido.crear("x@umss.edu.bo", List.of()).getId());
+}   // al salir del bloque vuelve el comportamiento real
+\end{lstlisting}
+
+\section{Strict stubs}
+\begin{lstlisting}[caption={\code{E08\_StrictStubsTest} (extracto)}]
+when(inventario.stockDisponible("A")).thenReturn(1);
+lenient().when(inventario.stockDisponible("B")).thenReturn(2); // sin lenient() -> falla
+assertEquals(1, inventario.stockDisponible("A"));
+\end{lstlisting}
+
+% =====================================================================
+\chapter{Cómo se diseña y se escribe un caso de prueba, paso a paso}
+\label{cap:proceso}
+% =====================================================================
+
+Los capítulos anteriores mostraron \emph{qué} hace Mockito. Este capítulo muestra \textbf{cómo trabajamos}: el procedimiento que seguimos para pasar de un requisito (o de un código) a un caso de prueba y, de ahí, a una prueba automatizada que pasa. Se explica cada decisión y se muestran también los \textbf{errores reales} que aparecen por el camino, porque así se aprende a usar la herramienta.
+
+\section{El proceso general}
+Seguimos el proceso de diseño de pruebas de la norma \textbf{ISO/IEC/IEEE 29119-4} (\emph{Test techniques}), adaptado a pruebas unitarias con Mockito:
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.28cm,font=\scriptsize,
+  paso/.style={draw=primario,fill=azulclaro,thick,rounded corners=3pt,text width=13.2cm,align=left,minimum height=0.75cm,inner sep=4pt}]
+  \node[paso] (p1) {\textbf{Paso 1. Identificar el elemento de prueba y sus dependencias.} ¿Qué clase o método se prueba (SUT)? ¿Con qué otros componentes habla?};
+  \node[paso,below=of p1] (p2) {\textbf{Paso 2. Elegir la base de prueba y la técnica.} Caja negra $\rightarrow$ la SRS (clases de equivalencia, valores límite, tabla de decisión). Caja blanca $\rightarrow$ el código (grafo de flujo, camino básico).};
+  \node[paso,below=of p2] (p3) {\textbf{Paso 3. Derivar las condiciones de prueba.} Lo que hay que comprobar: rangos de entrada, reglas, decisiones del código.};
+  \node[paso,below=of p3] (p4) {\textbf{Paso 4. Derivar los elementos de cobertura.} Las ``cosas a cubrir'': cada clase, cada límite, cada regla, cada camino. Se numeran.};
+  \node[paso,below=of p4,fill=amarilloclaro,draw=anot] (p5) {\textbf{Paso 5. Derivar los casos de prueba.} Para cada elemento: datos concretos de entrada, \textbf{resultado esperado calculado a mano} (oráculo) y \textbf{qué respuestas deben dar los mocks} (stubs).};
+  \node[paso,below=of p5,fill=verdeclaro,draw=verde] (p6) {\textbf{Paso 6. Implementar la prueba (Arrange -- Act -- Assert).} Preparar datos y stubs, ejecutar el SUT, comprobar el estado y, si hace falta, el comportamiento con \code{verify}.};
+  \node[paso,below=of p6,fill=rojoclaro,draw=acento] (p7) {\textbf{Paso 7. Ejecutar, analizar y medir.} Si falla: ¿error del código o de la prueba? Medir la cobertura con JaCoCo y volver al paso 4 si falta algo.};
+  \foreach \a/\b in {p1/p2,p2/p3,p3/p4,p4/p5,p5/p6,p6/p7} \draw[flecha] (\a) -- (\b);
+  \draw[flecha] (p7.east) -- ++(0.35,0) |- node[pos=0.25,right,font=\tiny]{iterar} (p4.east);
+\end{tikzpicture}
+\caption{Proceso que seguimos para cada caso de prueba}
+\label{fig:proceso}
+\end{figure}
+
+\section{La ficha de un caso de prueba}
+Cada caso de prueba se documenta con una \textbf{ficha}, basada en la especificación de casos de prueba de IEEE 829 / ISO/IEC/IEEE 29119-3. La ficha se escribe \textbf{antes} del código: el código solo traduce la ficha.
+
+\begin{table}[H]
+\centering
+\caption{Campos de la ficha de caso de prueba}
+\small
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Campo} & \textbf{Qué contiene}\\
+\midrule
+ID y nombre & Identificador único (p.\,ej., CB-05) y nombre descriptivo.\\
+Origen / técnica & De dónde sale: requisito de la SRS o camino del código, y la técnica usada.\\
+Precondiciones & Estado necesario antes de ejecutar.\\
+Datos de entrada & Valores concretos que recibe el SUT.\\
+Configuración de dobles & Qué responde cada mock (\emph{stubs}). Es lo propio de Mockito.\\
+Pasos & Acciones que realiza la prueba.\\
+Resultado esperado & Salida calculada \textbf{a mano} a partir de la SRS (oráculo).\\
+Verificaciones & Qué se comprueba: estado (\code{assert}) y comportamiento (\code{verify}).\\
+Resultado obtenido & Lo que produjo la ejecución, y el veredicto (APROBADO / FALLIDO).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\newcommand{\fichaprueba}[9]{%
+\begin{tcolorbox}[enhanced,colback=white,colframe=primario,fonttitle=\bfseries\small,title={#1 -- #2},arc=2pt,boxrule=0.6pt,left=3pt,right=3pt,top=1pt,bottom=1pt]
+\scriptsize
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.5cm}X@{}}
+Origen / técnica & #3\\
+Precondiciones & #4\\
+Datos de entrada & #5\\
+Dobles (stubs) & #6\\
+Pasos & #7\\
+Resultado esperado & #8\\
+Verificaciones & #9\\
+Resultado obtenido & Coincide con lo esperado. \textcolor{verde}{\textbf{APROBADO}} \textcolor{verde}{\faCheck}\\
+\end{tabularx}
+\end{tcolorbox}}
+
+\section{Paso 1 aplicado: ¿qué se simula y qué no?}
+Antes de escribir una sola línea hay que decidir qué dependencias del SUT se reemplazan por dobles. Usamos este criterio:
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.5cm and 1.2cm,font=\scriptsize,
+  q/.style={draw=anot,fill=amarilloclaro,thick,diamond,aspect=2.4,inner sep=1pt,align=center,text width=2.6cm},
+  r/.style={caja,minimum width=2.6cm}]
+  \node[q] (q1) {¿Es un sistema externo (BD, red, correo)?};
+  \node[r,right=1.4cm of q1,fill=rojoclaro,draw=acento] (m1) {\textbf{Mock}};
+  \node[q,below=0.6cm of q1] (q2) {¿Es lento, aleatorio o tiene efectos (cobra, envía)?};
+  \node[r,right=1.4cm of q2,fill=rojoclaro,draw=acento] (m2) {\textbf{Mock}};
+  \node[q,below=0.6cm of q2] (q3) {¿Necesito verificar cómo se le llama?};
+  \node[r,right=1.4cm of q3,fill=amarilloclaro,draw=anot] (s) {\textbf{Spy} (real + espía)};
+  \node[r,below=0.6cm of q3,fill=verdeclaro,draw=verde] (real) {\textbf{Objeto real}};
+  \draw[flecha] (q1) -- node[above]{sí} (m1);
+  \draw[flecha] (q1) -- node[left]{no} (q2);
+  \draw[flecha] (q2) -- node[above]{sí} (m2);
+  \draw[flecha] (q2) -- node[left]{no} (q3);
+  \draw[flecha] (q3) -- node[above]{sí} (s);
+  \draw[flecha] (q3) -- node[left]{no} (real);
+\end{tikzpicture}
+\caption{Criterio para decidir el tipo de doble}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Decisión aplicada a las dependencias de \code{PedidoService}}
+\small
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{Dependencia} & \textbf{Decisión} & \textbf{Razonamiento}\\
+\midrule
+\code{InventarioRepository} & Mock & Externa (base de datos) $\rightarrow$ mock. Además, necesitamos fijar el stock a voluntad.\\
+\code{PasarelaPago} & Mock & Externa y con efectos (cobra dinero) $\rightarrow$ mock. Permite simular ``rechazado''.\\
+\code{Notificador} & Mock & Externa y con efectos (envía correos) $\rightarrow$ mock.\\
+\code{PedidoRepository} & Mock & Externa (base de datos) $\rightarrow$ mock.\\
+\code{CalculadoraDescuentos} & Spy / real & Lógica propia, rápida y sin efectos $\rightarrow$ real. Se usa \code{@Spy} para poder verificar la llamada. En caja blanca se simula para \emph{aislar} \code{procesarPedido} (ver capítulo~\ref{cap:cajablanca}).\\
+\code{Pedido}, \code{Producto}\ldots & Reales & Objetos de valor: se crean con \code{new}, nunca se simulan.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Paso 6 aplicado: construir una prueba de rojo a verde}
+Se toma el criterio de aceptación de \textbf{RF-05}: \emph{``Dado un pedido de 2 monitores de 250 Bs para un cliente REGULAR y un banco que aprueba, cuando se procesa, entonces se cobran 450 Bs, el estado es PAGADO\ldots''}. A continuación se muestra cómo la construimos, \textbf{versión por versión}. Cada versión está en el paquete \code{pasoapaso} del proyecto. Las versiones en rojo están desactivadas con \code{@Disabled} y se ejecutan con \code{./run.sh rojos}.
+
+\subsection{Versión 1: la estructura}
+\begin{lstlisting}[caption={\code{Paso1\_EstructuraTest}: preparar el escenario}]
+@ExtendWith(MockitoExtension.class)            // 1.1 activar Mockito
+class Paso1_EstructuraTest {
+    @Mock InventarioRepository inventario;     // 1.2 un @Mock por dependencia externa
+    @Mock PasarelaPago pasarela;
+    @Mock Notificador notificador;
+    @Mock PedidoRepository pedidoRepository;
+    @Spy  CalculadoraDescuentos calculadora;   // 1.3 lógica propia: real
+    @InjectMocks PedidoService servicio;       // 1.4 el SUT, construido con los dobles
+
+    @Test
+    void elServicioSeConstruyeConSusDobles() {
+        assertNotNull(servicio);                // 1.5 primera comprobación mínima
+    }
+}
+\end{lstlisting}
+\textbf{Qué hicimos:} escribimos la clase de prueba con un campo por dependencia, según la tabla del paso 1. \textbf{Resultado:} \textcolor{verde}{verde}. Esto confirma que \code{@InjectMocks} encontró el constructor de 5 parámetros.
+
+\subsection{Versión 2: Arrange -- Act -- Assert sin programar los mocks (rojo)}
+\begin{lstlisting}[caption={\code{Paso2\_RojoSinStubsTest}}]
+// Arrange: solo los datos de entrada
+Producto monitor = new Producto("MON-01", "Monitor", 250.0);
+Pedido pedido = new Pedido("PED-1", "cliente@umss.edu.bo", List.of(new ItemPedido(monitor, 2)));
+// Act
+Pedido resultado = servicio.procesarPedido(pedido, TipoCliente.REGULAR);
+// Assert
+assertEquals(EstadoPedido.PAGADO, resultado.getEstado());
+\end{lstlisting}
+\begin{lstlisting}[style=bash,caption={Salida real de la ejecución}]
+pedidoValidoQuedaPagado() ✘ Stock insuficiente para el producto MON-01
+  => bo.edu.umss.pedidos.modelo.StockInsuficienteException: Stock insuficiente para el producto MON-01
+     bo.edu.umss.pedidos.servicio.PedidoService.procesarPedido(PedidoService.java:50)
+\end{lstlisting}
+\textbf{Análisis:} el servicio lanzó ``stock insuficiente'' aunque nosotros no pensábamos en el stock. La causa es que un mock \textbf{sin programar} devuelve el valor por defecto: \code{stockDisponible()} devolvió \code{0}, y $0 < 2$. \textbf{Lección:} hay que programar (\emph{stub}) cada consulta que el camino hace a un mock.
+
+\subsection{Versión 3: programar solo el stock (rojo otra vez)}
+\begin{lstlisting}[caption={\code{Paso3\_RojoStubIncompletoTest}: se añade una línea}]
+when(inventario.stockDisponible("MON-01")).thenReturn(10);      // NUEVO: hay stock
+\end{lstlisting}
+\begin{lstlisting}[style=bash,caption={Salida real de la ejecución}]
+pedidoValidoQuedaPagado() ✘ Cannot invoke "bo.edu.umss.pedidos.modelo.ResultadoPago.aprobado()"
+                             because "<local9>" is null
+     bo.edu.umss.pedidos.servicio.PedidoService.procesarPedido(PedidoService.java:59)
+\end{lstlisting}
+\textbf{Análisis:} ahora el código avanzó hasta la línea 59 (\code{if (!pago.aprobado())}). \code{pasarela.cobrar(...)} no estaba programado y devolvió \code{null}, el valor por defecto para objetos; al llamar a \code{.aprobado()} sobre \code{null} se produjo un \code{NullPointerException}. \code{<local9>} es la variable local \code{pago}. \textbf{Lección:} hay que \emph{seguir el camino del código} y programar \textbf{todas} las dependencias que ese camino consulta, no solo la primera.
+
+\subsection{Versión 4: todos los stubs del camino (verde)}
+Antes de escribir el stub del cobro hay que saber \textbf{cuánto} se va a cobrar. Lo calculamos \textbf{a mano}, desde la SRS, sin mirar el código:
+
+\begin{center}
+\begin{tabular}{rl}
+Subtotal & $= 2 \times 250 = 500$ Bs\\
+Tramo (RN-01) & $500 \geq 500 \Rightarrow 10$\,\%; cliente REGULAR $\Rightarrow$ sin adicional (RN-02)\\
+Descuento & $= 500 \times 0{,}10 = 50$ Bs\\
+Total (RN-04) & $= 500 - 50 = \mathbf{450}$ Bs\\
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[caption={\code{Paso4\_VerdeTest}}]
+when(inventario.stockDisponible("MON-01")).thenReturn(10);
+when(pasarela.cobrar("cliente@umss.edu.bo", 450.0))                          // NUEVO
+        .thenReturn(ResultadoPago.aprobado("TX-1"));
+when(pedidoRepository.guardar(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0)); // NUEVO
+
+Pedido resultado = servicio.procesarPedido(pedido, TipoCliente.REGULAR);
+
+assertEquals(EstadoPedido.PAGADO, resultado.getEstado());
+assertEquals(450.0, resultado.getTotal(), 0.001);
+\end{lstlisting}
+\textbf{Decisiones:}
+\begin{itemize}
+  \item El stub del cobro usa el valor \textbf{exacto} \code{450.0}, no \code{anyDouble()}. Si el servicio cobrara otro monto, el stub no coincidiría y la prueba fallaría. Así, el stub también \emph{verifica} el cálculo.
+  \item El repositorio usa \code{thenAnswer(inv -> inv.getArgument(0))}: ``devuelve el mismo pedido que te pasen''. Así se imita a una base de datos real.
+  \item La tolerancia \code{0.001} en \code{assertEquals} evita falsos fallos por la representación de los \code{double}.
+\end{itemize}
+\textbf{Resultado:} \textcolor{verde}{verde}.
+
+\subsection{Versión 5: verificar el comportamiento}
+El estado PAGADO no garantiza que se haya descontado el stock ni enviado el correo. RF-05 lo exige, así que se añaden verificaciones de comportamiento:
+\begin{lstlisting}[caption={\code{Paso5\_VerificarComportamientoTest}: se añaden 3 líneas}]
+verify(inventario).descontarStock("MON-01", 2);                                 // NUEVO
+verify(pedidoRepository).guardar(pedido);                                       // NUEVO
+verify(notificador).enviar(eq("cliente@umss.edu.bo"), startsWith("Pedido PED-1 confirmado")); // NUEVO
+\end{lstlisting}
+
+\begin{atencion}[Error real que cometimos al escribir esta versión]
+La primera vez escribimos \code{enviar("cliente@umss.edu.bo", startsWith("Pedido PED-1 confirmado"))}, mezclando un valor literal con un \emph{matcher}. Mockito respondió con \code{InvalidUseOfMatchersException}: cuando se usa un matcher, \textbf{todos} los argumentos deben serlo. La corrección fue envolver el correo con \code{eq(...)}. El capítulo~\ref{cap:arquitectura} explica el motivo: la pila de matchers tenía 1 elemento para 2 argumentos.
+\end{atencion}
+
+\subsection{Versión 6: ¿qué pasa si la prueba está mal? (rojo)}
+Para comprobar que la prueba detecta errores, simulamos un error del tester: olvidar el descuento y esperar un cobro de 500 Bs.
+\begin{lstlisting}[caption={\code{Paso6\_RojoVerificacionTest}}]
+verify(pasarela).cobrar("cliente@umss.edu.bo", 500.0);   // ERROR del tester: faltó el descuento
+\end{lstlisting}
+\begin{lstlisting}[style=bash,caption={Salida real de la ejecución}]
+Wanted but not invoked:
+pasarela.cobrar(
+    "cliente@umss.edu.bo",
+    500.0d
+);
+-> at ...Paso6_RojoVerificacionTest.seCobraElSubtotalSinDescuento(Paso6_RojoVerificacionTest.java:57)
+
+However, there was exactly 1 interaction with this mock:
+pasarela.cobrar(
+    "cliente@umss.edu.bo",
+    450.0d
+);
+-> at bo.edu.umss.pedidos.servicio.PedidoService.procesarPedido(PedidoService.java:58)
+\end{lstlisting}
+\textbf{Cómo se lee:} Mockito dice qué esperábamos (\emph{Wanted}: cobrar 500), dónde lo pedimos (línea 57 de la prueba) y qué pasó en realidad (\emph{However}: se cobró 450 en la línea 58 del servicio). Con eso el tester sabe de inmediato que el error está en su expectativa, no en el código.
+
+\subsection{Resumen: lista de control para escribir cualquier prueba}
+\begin{enumerate}
+  \item Escribir la \textbf{ficha} del caso (entradas, oráculo, stubs).
+  \item Crear la clase con \code{@ExtendWith}, los \code{@Mock} y el \code{@InjectMocks}.
+  \item \textbf{Arrange}: crear los datos; programar un stub por cada consulta que el camino hace a un mock. Con \code{STRICT\_STUBS}, ni uno más.
+  \item \textbf{Act}: una sola llamada al SUT.
+  \item \textbf{Assert}: primero el estado (\code{assertEquals}), luego el comportamiento necesario (\code{verify}, \code{never}).
+  \item Ejecutar. Si falla, leer el mensaje: ¿error del código o de la prueba?
+  \item Comprobar que la prueba \textbf{puede fallar} (versión 6): una prueba que nunca falla no prueba nada.
+\end{enumerate}
+
+% =====================================================================
+\chapter{Pruebas de caja negra, paso a paso}
+\label{cap:cajanegra}
+% =====================================================================
+
+En caja negra \textbf{no se mira el código}. Los casos se obtienen solo de la SRS (capítulo~\ref{cap:srs}). Se aplican las técnicas a dos elementos: \code{CalculadoraDescuentos} (clases de equivalencia y valores límite) y \code{PedidoService.procesarPedido} (tabla de decisión).
+
+\section{\code{CalculadoraDescuentos}: clases de equivalencia y valores límite}
+
+\subsection{Paso 1: elemento de prueba y dependencias}
+El elemento es el método \code{calcularDescuento(subtotal, tipo)}. \textbf{No tiene dependencias}, así que \textbf{no se necesitan mocks}. Esto también es una decisión: no se usa Mockito donde no hace falta.
+
+\subsection{Paso 2: base de prueba}
+Se toman de la SRS el requisito RF-03 y las reglas RN-01, RN-02 y RN-04:
+\begin{quote}\small\itshape
+RN-01: menor que 100 Bs $\rightarrow$ 0\,\%; de 100 a 499,99 Bs $\rightarrow$ 5\,\%; 500 Bs o más $\rightarrow$ 10\,\%. Un subtotal negativo es inválido. RN-02: un cliente VIP recibe 5 puntos adicionales. RN-04: redondeo a 2 decimales.
+\end{quote}
+
+\subsection{Paso 3: condiciones de prueba (entradas y salidas)}
+\begin{table}[H]
+\centering
+\caption{Análisis de entradas y salidas}
+\small
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{Variable} & \textbf{Tipo} & \textbf{Dominio según la SRS}\\
+\midrule
+\code{subtotal} (entrada) & número real, Bs & $(-\infty, +\infty)$, con 4 zonas: negativo, $[0, 100)$, $[100, 500)$, $[500, +\infty)$\\
+\code{tipo} (entrada) & enumeración & \{REGULAR, VIP\}\\
+descuento (salida) & número real, Bs & $\geq 0$, 2 decimales; o un error si la entrada es inválida\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Paso 4a: clases de equivalencia}
+Una \textbf{clase de equivalencia} es un conjunto de valores que, según la especificación, el sistema debe tratar \emph{igual}. Si el sistema funciona con un valor de la clase, se supone que funciona con todos, así que basta con probar uno. Se aplican las reglas de Myers:
+\begin{itemize}
+  \item Si la condición es un \textbf{rango}, se crea una clase válida por cada tramo y clases inválidas para lo que queda fuera.
+  \item Si la condición es un \textbf{conjunto de valores} tratados de forma distinta, se crea una clase por valor.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Clases de equivalencia derivadas}
+\small
+\begin{tabular}{llllp{4cm}}
+\toprule
+\textbf{Clase} & \textbf{Variable} & \textbf{Condición} & \textbf{Tipo} & \textbf{De dónde sale}\\
+\midrule
+CE1 & subtotal & $s < 0$ & inválida & RN-01: ``negativo es inválido''\\
+CE2 & subtotal & $0 \leq s < 100$ & válida & RN-01: tramo 0\,\%\\
+CE3 & subtotal & $100 \leq s < 500$ & válida & RN-01: tramo 5\,\%\\
+CE4 & subtotal & $s \geq 500$ & válida & RN-01: tramo 10\,\%\\
+CE5 & tipo & REGULAR & válida & RN-02: sin adicional\\
+CE6 & tipo & VIP & válida & RN-02: +5\,\%\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Paso 4b: valores límite}
+Los errores de programación se concentran en los bordes (escribir \code{>} en lugar de \code{>=}). Por eso, para cada frontera $b$ entre clases se prueban el \textbf{propio límite} y el valor \textbf{inmediatamente anterior}. Como los montos tienen 2 decimales (RN-04), ``inmediatamente anterior'' es $b - 0{,}01$.
+
+\begin{table}[H]
+\centering
+\caption{Derivación de los valores límite}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{Frontera} & \textbf{Entre} & \textbf{Valor anterior ($b-0{,}01$)} & \textbf{Límite ($b$)}\\
+\midrule
+0 & CE1 | CE2 & $-0{,}01$ (CE1) & 0 (CE2)\\
+100 & CE2 | CE3 & 99,99 (CE2) & 100 (CE3)\\
+500 & CE3 | CE4 & 499,99 (CE3) & 500 (CE4)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1.1cm]
+  \draw[thick,-{Stealth}] (-1.5,0) -- (11,0) node[right]{\small subtotal};
+  \fill[rojoclaro] (-1.5,-0.25) rectangle (0,0.25);
+  \fill[azulclaro] (0,-0.25) rectangle (3,0.25);
+  \fill[amarilloclaro] (3,-0.25) rectangle (7,0.25);
+  \fill[verdeclaro] (7,-0.25) rectangle (10.8,0.25);
+  \node[font=\scriptsize] at (-0.75,0.55) {CE1};
+  \node[font=\scriptsize] at (1.5,0.55) {CE2: 0\,\%};
+  \node[font=\scriptsize] at (5,0.55) {CE3: 5\,\%};
+  \node[font=\scriptsize] at (8.9,0.55) {CE4: 10\,\%};
+  \foreach \x in {-0.25,0,2.75,3,6.75,7} \draw[acento,thick] (\x,-0.35) -- (\x,0.35);
+  \node[font=\tiny,acento,below] at (-0.35,-0.35) {-0,01};
+  \node[font=\tiny,acento,below] at (0.15,-0.35) {0};
+  \node[font=\tiny,acento,below] at (2.6,-0.35) {99,99};
+  \node[font=\tiny,acento,below] at (3.2,-0.35) {100};
+  \node[font=\tiny,acento,below] at (6.55,-0.35) {499,99};
+  \node[font=\tiny,acento,below] at (7.2,-0.35) {500};
+  \foreach \x/\l in {1.5/50,5/300,9/1000} \draw[primario,thick] (\x,-0.2) -- (\x,0.2) node[above=6pt,font=\tiny,primario]{\l};
+\end{tikzpicture}
+\caption{Particiones, valores límite (rojo) y representantes (azul)}
+\end{figure}
+
+\subsection{Paso 4c: combinación de las dos variables}
+Hay 4 clases de subtotal y 2 de tipo. Decidimos así cómo combinarlas:
+\begin{itemize}
+  \item \textbf{Con REGULAR} (CE5): todas las clases válidas de subtotal, con su representante y sus límites (8 casos).
+  \item \textbf{Con VIP} (CE6): la regla RN-02 es \emph{aditiva} e igual en todos los tramos, así que basta cubrir cada clase válida de subtotal al menos una vez con VIP, usando su límite inferior (4 casos: 50, 100, 500 y un representante alto, 2000).
+  \item \textbf{Clase inválida} (CE1): siguiendo a Myers, \textbf{un caso inválido cubre una sola clase inválida} y se combina con valores válidos del resto (REGULAR). Se prueban el límite ($-0{,}01$) y un representante ($-100$).
+\end{itemize}
+
+\subsection{Paso 5: oráculo y tabla de casos}
+El resultado esperado de cada caso se calcula \textbf{a mano} con las reglas de la SRS:
+
+\begin{table}[H]
+\centering
+\caption{Casos de prueba de caja negra para \code{CalculadoraDescuentos}}
+\small
+\begin{tabular}{lllrlll}
+\toprule
+\textbf{ID} & \textbf{Clases} & \textbf{Tipo de valor} & \textbf{Subtotal} & \textbf{Tipo} & \textbf{Cálculo del oráculo} & \textbf{Esperado}\\
+\midrule
+CD-01 & CE2, CE5 & representante & 50 & REG & $50 \times 0$ & 0,00\\
+CD-02 & CE2, CE5 & límite & 0 & REG & $0 \times 0$ & 0,00\\
+CD-03 & CE2, CE5 & anterior a 100 & 99,99 & REG & $99{,}99 \times 0$ & 0,00\\
+CD-04 & CE3, CE5 & límite & 100 & REG & $100 \times 0{,}05$ & 5,00\\
+CD-05 & CE3, CE5 & representante & 300 & REG & $300 \times 0{,}05$ & 15,00\\
+CD-06 & CE3, CE5 & anterior a 500 & 499,99 & REG & $499{,}99 \times 0{,}05 = 24{,}9995 \approx$ & 25,00\\
+CD-07 & CE4, CE5 & límite & 500 & REG & $500 \times 0{,}10$ & 50,00\\
+CD-08 & CE4, CE5 & representante & 1000 & REG & $1000 \times 0{,}10$ & 100,00\\
+CD-09 & CE2, CE6 & representante & 50 & VIP & $50 \times (0 + 0{,}05)$ & 2,50\\
+CD-10 & CE3, CE6 & límite & 100 & VIP & $100 \times (0{,}05 + 0{,}05)$ & 10,00\\
+CD-11 & CE4, CE6 & límite & 500 & VIP & $500 \times (0{,}10 + 0{,}05)$ & 75,00\\
+CD-12 & CE4, CE6 & representante & 2000 & VIP & $2000 \times 0{,}15$ & 300,00\\
+CD-13 & CE1 & anterior a 0 & $-0{,}01$ & REG & RN-01: inválido & error\\
+CD-14 & CE1 & representante & $-100$ & REG & RN-01: inválido & error\\
+CD-15 & CE5, CE6 & propiedad & varios & ambos & RN-02: VIP $>$ REGULAR & verdadero\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{nota}[Detalle del caso CD-06]
+$499{,}99 \times 0{,}05 = 24{,}9995$. RN-04 exige 2 decimales, así que el valor esperado es $25{,}00$. Este caso comprueba, además del límite, la \textbf{regla de redondeo}: si el sistema truncara en lugar de redondear, daría $24{,}99$ y la prueba fallaría.
+\end{nota}
+
+\paragraph{Comprobación de cobertura de clases.} Antes de programar se verifica que cada clase tenga al menos un caso:
+
+\begin{table}[H]
+\centering
+\caption{Matriz clases $\times$ casos}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{l*{15}{c}}
+\toprule
+& 01 & 02 & 03 & 04 & 05 & 06 & 07 & 08 & 09 & 10 & 11 & 12 & 13 & 14 & 15\\
+\midrule
+CE1 & & & & & & & & & & & & & X & X & \\
+CE2 & X & X & X & & & & & & X & & & & & & \\
+CE3 & & & & X & X & X & & & & X & & & & & \\
+CE4 & & & & & & & X & X & & & X & X & & & \\
+CE5 & X & X & X & X & X & X & X & X & & & & & X & X & X\\
+CE6 & & & & & & & & & X & X & X & X & & & X\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Paso 6: de la tabla al código, paso a paso}
+\textbf{6.1 Primer caso como prueba simple.} Se empieza traduciendo un solo caso (CD-07), para validar la idea:
+\begin{lstlisting}[caption={Un caso aislado}]
+class CalculadoraDescuentosCajaNegraTest {
+    private final CalculadoraDescuentos calculadora = new CalculadoraDescuentos(); // objeto REAL
+
+    @Test
+    void cd07LimiteInferiorCE4() {
+        assertEquals(50.00, calculadora.calcularDescuento(500, TipoCliente.REGULAR), 0.001);
+    }
+}
+\end{lstlisting}
+
+\textbf{6.2 Se generaliza a una prueba parametrizada.} Los 12 casos válidos tienen la misma forma (entrada $\rightarrow$ número esperado), así que en lugar de 12 métodos casi iguales se usa \code{@ParameterizedTest}: \textbf{cada fila del \code{@CsvSource} es una fila de la tabla}.
+\begin{lstlisting}[caption={Clases válidas y límites (\code{CalculadoraDescuentosCajaNegraTest})}]
+@ParameterizedTest(name = "[{index}] {0}: subtotal={1}, {2} -> descuento={3}")
+@CsvSource({
+    "CE2 representante,       50,     REGULAR, 0.00",    // CD-01
+    "CE2 límite inferior,     0,      REGULAR, 0.00",    // CD-02
+    "CE2 límite superior,     99.99,  REGULAR, 0.00",    // CD-03
+    "CE3 límite inferior,     100,    REGULAR, 5.00",    // CD-04
+    "CE3 representante,       300,    REGULAR, 15.00",   // CD-05
+    "CE3 límite superior,     499.99, REGULAR, 25.00",   // CD-06
+    "CE4 límite inferior,     500,    REGULAR, 50.00",   // CD-07
+    "CE4 representante,       1000,   REGULAR, 100.00",  // CD-08
+    "CE2 VIP,                 50,     VIP,     2.50",    // CD-09
+    "CE3 VIP límite inferior, 100,    VIP,     10.00",   // CD-10
+    "CE4 VIP límite inferior, 500,    VIP,     75.00",   // CD-11
+    "CE4 VIP representante,   2000,   VIP,     300.00"   // CD-12
+})
+void clasesValidasYValoresLimite(String caso, double subtotal, TipoCliente tipo, double esperado) {
+    assertEquals(esperado, calculadora.calcularDescuento(subtotal, tipo), 0.001, caso);
+}
+\end{lstlisting}
+
+\textbf{6.3 La clase inválida.} El resultado esperado no es un número sino un error, así que se usa \code{assertThrows}:
+\begin{lstlisting}[caption={Clase inválida CE1 (CD-13 y CD-14)}]
+@ParameterizedTest(name = "CE1 inválida: subtotal={0}")
+@CsvSource({"-0.01", "-100"})
+void claseInvalidaSubtotalNegativo(double subtotal) {
+    assertThrows(IllegalArgumentException.class,
+            () -> calculadora.calcularDescuento(subtotal, TipoCliente.REGULAR));
+}
+\end{lstlisting}
+
+\subsection{Paso 7: ejecución}
+\begin{lstlisting}[style=bash,caption={Salida de la ejecución (extracto; los ID entre paréntesis son anotaciones nuestras)}]
+Caja negra - CalculadoraDescuentos ✔
+├─ Un VIP siempre recibe más descuento que un REGULAR ✔           (CD-15)
+├─ claseInvalidaSubtotalNegativo(double) ✔
+│  ├─ CE1 inválida: subtotal="-0.01" ✔                              (CD-13)
+│  └─ CE1 inválida: subtotal="-100" ✔                               (CD-14)
+└─ clasesValidasYValoresLimite(String, double, TipoCliente, double) ✔
+   ├─ [1] "CE2 representante": subtotal="50", "REGULAR" -> descuento="0.00" ✔
+   ├─ [3] "CE2 límite superior": subtotal="99.99", "REGULAR" -> descuento="0.00" ✔
+   ├─ [6] "CE3 límite superior": subtotal="499.99", "REGULAR" -> descuento="25.00" ✔
+   ├─ [7] "CE4 límite inferior": subtotal="500", "REGULAR" -> descuento="50.00" ✔
+   └─ ... (12 filas en total)
+\end{lstlisting}
+
+\section{\code{PedidoService.procesarPedido}: tabla de decisión}
+
+\subsection{Pasos 1 y 2: elemento, dependencias y base de prueba}
+El elemento es \code{procesarPedido}. Tiene 5 dependencias, que se resuelven con la decisión del capítulo~\ref{cap:proceso}: cuatro mocks y la calculadora real. La base de prueba son los requisitos RF-01, RF-02, RF-04 y RF-05 y el caso de uso CU-01 con sus flujos alternativos FA-1, FA-2 y FA-3.
+
+\subsection{Paso 3: condiciones y acciones}
+Leyendo el caso de uso CU-01 se identifican las \textbf{condiciones} que cambian el resultado y las \textbf{acciones} posibles:
+\begin{table}[H]
+\centering
+\caption{Condiciones y acciones extraídas de la SRS}
+\small
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+& \textbf{ID} & \textbf{Descripción (origen)}\\
+\midrule
+\multirow{3}{*}{Condiciones} & C1 & ¿El pedido tiene items? (RF-01, paso 2 / FA-1)\\
+& C2 & ¿Hay stock suficiente para todos los items? (RF-02, paso 3 / FA-2)\\
+& C3 & ¿La pasarela aprueba el pago? (RF-04/05, paso 6 / FA-3)\\
+\midrule
+\multirow{4}{*}{Acciones} & A1 & Error ``el pedido no tiene items''\\
+& A2 & Error ``stock insuficiente''\\
+& A3 & Estado RECHAZADO + notificar motivo\\
+& A4 & Estado PAGADO + descontar stock + registrar + notificar confirmación\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Paso 4a: tabla de decisión completa}
+Con 3 condiciones binarias hay $2^3 = 8$ combinaciones. Se escriben \textbf{todas} y, para cada una, se determina con la SRS qué acción corresponde:
+\begin{table}[H]
+\centering
+\caption{Tabla de decisión completa (8 reglas)}
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+& 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8\\
+\midrule
+C1 ¿tiene items? & N & N & N & N & S & S & S & S\\
+C2 ¿hay stock? & N & N & S & S & N & N & S & S\\
+C3 ¿pago aprobado? & N & S & N & S & N & S & N & S\\
+\midrule
+A1 error sin items & X & X & X & X & & & & \\
+A2 error sin stock & & & & & X & X & & \\
+A3 RECHAZADO & & & & & & & X & \\
+A4 PAGADO & & & & & & & & X\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Paso 4b: simplificar la tabla}
+Se buscan columnas con la \textbf{misma acción} que solo difieren en condiciones que \textbf{no influyen}:
+\begin{itemize}
+  \item Reglas 1--4: si no hay items (C1 = N), el proceso termina en el paso 2 del CU-01, así que C2 y C3 no importan $\Rightarrow$ se fusionan en \textbf{R1} con ``--'' (indiferente).
+  \item Reglas 5--6: sin stock, el proceso termina en el paso 3 y nunca se cobra, así que C3 no importa $\Rightarrow$ \textbf{R2}.
+  \item Las reglas 7 y 8 quedan como \textbf{R3} y \textbf{R4}.
+\end{itemize}
+\begin{table}[H]
+\centering
+\caption{Tabla de decisión simplificada (4 reglas = 4 casos)}
+\small
+\begin{tabular}{lcccc}
+\toprule
+& \textbf{R1} & \textbf{R2} & \textbf{R3} & \textbf{R4}\\
+\midrule
+C1 ¿tiene items? & N & S & S & S\\
+C2 ¿hay stock? & -- & N & S & S\\
+C3 ¿pago aprobado? & -- & -- & N & S\\
+\midrule
+Acción & A1 & A2 & A3 & A4\\
+Reglas originales & 1--4 & 5--6 & 7 & 8\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Paso 4c: valor límite de la condición C2}
+La condición C2 esconde una comparación numérica (RN-03: suficiente si \emph{stock $\geq$ cantidad}). Se aplica también análisis de valores límite: \code{stock = cantidad} (límite, debe aprobarse; caso \textbf{L1}) y \code{stock = cantidad $-$ 1} (debe fallar; lo cubre R2 con stock 1 y cantidad 2).
+
+\subsection{Paso 5: de cada regla a datos concretos y stubs}
+Aquí entra Mockito. Para cada regla hay que decidir \textbf{qué debe responder cada mock} para que se cumplan las condiciones. La clave es que \textbf{C2 y C3 no dependen del pedido, sino de lo que respondan los sistemas externos}: sin mocks no podríamos elegirlas.
+
+\begin{table}[H]
+\centering
+\caption{Condición $\rightarrow$ cómo se controla}
+\small
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Condición} & \textbf{Cómo la controlamos en la prueba}\\
+\midrule
+C1 & Con los \emph{datos}: pedido con \code{List.of()} (N) o con un item (S).\\
+C2 & Con un \emph{stub}: \code{when(inventario.stockDisponible("MON-01")).thenReturn(1)} (N) o \code{thenReturn(10)} (S).\\
+C3 & Con un \emph{stub}: \code{when(pasarela.cobrar(...)).thenReturn(rechazado(...))} (N) o \code{aprobado(...)} (S).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{idea}[¿Por qué no se usa \code{verify} en caja negra?]
+En caja negra solo se observan las \textbf{salidas} que promete la SRS: el estado del pedido, el total o la excepción. Los mocks se usan solo como \textbf{stubs} que \emph{proveen entradas}. Si verificáramos llamadas internas, la prueba dependería de la implementación y dejaría de ser de caja negra.
+\end{idea}
+
+Con \code{STRICT\_STUBS}, además, solo se programa lo que el camino realmente usa. Por ejemplo, en R2 \textbf{no} se programa la pasarela, porque la SRS dice que sin stock no se cobra. Si la programáramos, Mockito avisaría de un stub innecesario.
+
+\subsection{Fichas de los casos}
+El pedido de referencia es \code{pedidoDe(n)} = 1 item de \code{MON-01} (Monitor, 250 Bs) $\times n$ para \code{cliente@umss.edu.bo}.
+
+\fichaprueba{R1}{Pedido sin items es rechazado}
+{Caja negra, tabla de decisión, regla R1. RF-01, CU-01 FA-1.}
+{Servicio construido con 4 mocks y la calculadora real.}
+{Pedido \code{PED-0} con \code{List.of()}; tipo REGULAR.}
+{Ninguno (el proceso termina antes de consultar a nadie).}
+{Llamar a \code{procesarPedido}.}
+{\code{IllegalArgumentException}.}
+{\code{assertThrows(IllegalArgumentException.class, ...)}.}
+
+\fichaprueba{R2}{Sin stock suficiente}
+{Caja negra, regla R2 (y valor límite stock = cantidad $-$ 1). RF-02, FA-2.}
+{Igual que R1.}
+{\code{pedidoDe(2)}; tipo REGULAR.}
+{\code{inventario.stockDisponible("MON-01")} $\rightarrow$ \code{1}.}
+{Llamar a \code{procesarPedido}.}
+{\code{StockInsuficienteException}.}
+{\code{assertThrows(StockInsuficienteException.class, ...)}.}
+
+\fichaprueba{R3}{Pago rechazado}
+{Caja negra, regla R3. RF-04, FA-3.}
+{Igual que R1.}
+{\code{pedidoDe(2)}; tipo REGULAR.}
+{\code{stockDisponible("MON-01")} $\rightarrow$ \code{10}; \code{cobrar(anyString(), anyDouble())} $\rightarrow$ \code{rechazado("Tarjeta vencida")}.}
+{Llamar a \code{procesarPedido}.}
+{Pedido en estado \code{RECHAZADO}.}
+{\code{assertEquals(RECHAZADO, resultado.getEstado())}.}
+
+\fichaprueba{R4}{Pago aprobado}
+{Caja negra, regla R4. RF-05, flujo básico CU-01.}
+{Igual que R1.}
+{\code{pedidoDe(2)}: subtotal 500; tipo REGULAR.}
+{\code{stockDisponible} $\rightarrow$ \code{10}; \code{cobrar(...)} $\rightarrow$ \code{aprobado("TX-1")}; \code{guardar(any())} $\rightarrow$ el mismo pedido.}
+{Llamar a \code{procesarPedido}.}
+{Estado \code{PAGADO}; total $= 500 - 10$\,\%$ = 450{,}00$.}
+{\code{assertEquals(PAGADO, ...)}; \code{assertEquals(450.0, total, 0.001)}.}
+
+\fichaprueba{L1}{Valor límite: stock igual a la cantidad}
+{Caja negra, valor límite de C2. RN-03 (``$\geq$'').}
+{Igual que R1.}
+{\code{pedidoDe(2)}; tipo REGULAR.}
+{\code{stockDisponible} $\rightarrow$ \code{2}; \code{cobrar} $\rightarrow$ \code{aprobado("TX-2")}; \code{guardar} $\rightarrow$ el mismo pedido.}
+{Llamar a \code{procesarPedido}.}
+{Estado \code{PAGADO} (el stock justo alcanza).}
+{\code{assertEquals(PAGADO, ...)}.}
+
+\subsection{Paso 6: código de un caso, línea por línea}
+\begin{lstlisting}[caption={Regla R4 comentada paso a paso}]
+@Test
+@DisplayName("R4: pago aprobado -> PAGADO y total = 500 - 10 % = 450")
+void r4PagoAprobado() {
+    // ARRANGE -- condición C2 = S: el inventario "dice" que hay 10 unidades
+    when(inventario.stockDisponible("MON-01")).thenReturn(10);
+    // ARRANGE -- condición C3 = S: el banco "aprueba" cualquier cobro
+    when(pasarela.cobrar(anyString(), anyDouble())).thenReturn(ResultadoPago.aprobado("TX-1"));
+    // ARRANGE -- el registro devuelve el mismo pedido que recibe (como una BD real)
+    when(pedidoRepository.guardar(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    // ACT -- condición C1 = S: pedido con 1 item (2 monitores de 250 Bs)
+    Pedido resultado = servicio.procesarPedido(pedidoDe(2), TipoCliente.REGULAR);
+
+    // ASSERT -- solo salidas observables prometidas por RF-05
+    assertEquals(EstadoPedido.PAGADO, resultado.getEstado());
+    assertEquals(450.0, resultado.getTotal(), 0.001);
+}
+\end{lstlisting}
+
+\subsection{Paso 7: ejecución}
+\begin{lstlisting}[style=bash,caption={Salida de la ejecución (ordenada)}]
+Caja negra - PedidoService (tabla de decisión) ✔
+├─ R1: pedido sin items es rechazado ✔
+├─ R2: sin stock suficiente se lanza StockInsuficienteException ✔
+├─ R3: pago rechazado deja el pedido en estado RECHAZADO ✔
+├─ R4: pago aprobado -> PAGADO y total = 500 - 10 % = 450 ✔
+└─ Valor límite de stock: stock == cantidad es suficiente ✔
+\end{lstlisting}
+
+\begin{nota}[¿Detectan errores estas pruebas?]
+Lo comprobamos introduciendo un error a propósito en el código (\emph{mutación}): cambiar \code{stock < cantidad} por \code{stock <= cantidad}. Al ejecutar, \textbf{falló el caso L1} (valor límite), junto con 3 pruebas de caja blanca y de ejemplos. Sin el caso de valor límite, ese error habría pasado inadvertido en la caja negra.
+\end{nota}
+
+% =====================================================================
+\chapter{Pruebas de caja blanca, paso a paso}
+\label{cap:cajablanca}
+% =====================================================================
+
+En caja blanca la base de prueba es el \textbf{código fuente}. La técnica es el \textbf{camino básico de McCabe}: se construye el grafo de flujo, se calcula la complejidad ciclomática $V(G)$ y se diseña un caso por cada camino independiente. Se aplica a \code{procesarPedido} (código~\ref{lst:sut}) y a \code{calcularDescuento}.
+
+\section{\code{procesarPedido}: camino básico}
+
+\subsection{Paso 1: numerar el código y marcar las decisiones}
+Se parte del código~\ref{lst:sut} (sección del SDD), cuyas líneas están numeradas. Se marcan las \textbf{decisiones}: cada \code{if}, cada condición de un \code{for} y cada condición simple de una condición compuesta.
+
+\begin{table}[H]
+\centering
+\caption{Decisiones encontradas en el código}
+\small
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{ID} & \textbf{Línea} & \textbf{Decisión y cómo se tomó}\\
+\midrule
+D1 & 2 & \code{pedido == null}. Primera parte del \code{||}.\\
+D2 & 2 & \code{pedido.getItems().isEmpty()}. Segunda parte del \code{||}. \emph{Una condición compuesta se separa en condiciones simples}, porque cada una es una bifurcación distinta.\\
+D3 & 6 & \code{for}: ¿queda otro item por validar?\\
+D4 & 8 & \code{stockDisponible(codigo) < item.cantidad()}.\\
+D5 & 17 & \code{!pago.aprobado()}.\\
+D6 & 22 & \code{for}: ¿queda otro item por descontar?\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Paso 2: agrupar las líneas en nodos}
+Para construir los nodos del grafo se aplican tres reglas:
+\begin{enumerate}
+  \item Cada \textbf{decisión} es un nodo (nodo predicado).
+  \item Las sentencias \textbf{secuenciales consecutivas}, sin decisiones entre medio, se agrupan en un único nodo.
+  \item Se añade un \textbf{nodo de salida} único, al que llegan todos los \code{return} y \code{throw}.
+\end{enumerate}
+
+\begin{table}[H]
+\centering
+\caption{Correspondencia nodo $\leftrightarrow$ líneas de código}
+\small
+\begin{tabularx}{\linewidth}{clX}
+\toprule
+\textbf{Nodo} & \textbf{Líneas} & \textbf{Contenido}\\
+\midrule
+1 & 2 & D1: \code{pedido == null}\\
+2 & 2 & D2: \code{items.isEmpty()}\\
+3 & 3 & \code{throw IllegalArgumentException}\\
+4 & 6 & D3: condición del primer \code{for}\\
+5 & 7--8 & \code{codigo = ...} y D4: \code{stock < cantidad}\\
+6 & 9 & \code{throw StockInsuficienteException}\\
+7 & 11 & \code{subtotal += ...} (vuelve al nodo 4)\\
+8 & 13--17 & descuento, total, \code{cobrar(...)} y D5: \code{!aprobado}\\
+9 & 18--20 & \code{RECHAZADO}, notificar, \code{return}\\
+10 & 22 & D6: condición del segundo \code{for}\\
+11 & 23 & \code{descontarStock(...)} (vuelve al nodo 10)\\
+12 & 25--30 & \code{PAGADO}, \code{setTotal}, guardar, notificar, \code{return}\\
+13 & 31 & salida del método\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{nota}[Una decisión de modelado]
+La línea 5 (\code{subtotal = 0}) se ejecuta una sola vez, antes del bucle, y no contiene decisiones. Si se la representa como un nodo propio entre 2 y 4, se añaden un nodo y un arco, y $E - N + 2$ no cambia. Por simplicidad se la considera parte del arco $2 \rightarrow 4$.
+\end{nota}
+
+\subsection{Paso 3: dibujar el grafo y listar las aristas}
+Cada posible ``salto'' de un nodo a otro es una arista. Se recorre el código y se anotan:
+
+\begin{minipage}[t]{0.5\linewidth}
+\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=1cm,y=0.9cm,>={Stealth[length=2mm]}]
+  \node[nodod] (1) at (0,0) {1};
+  \node[nodod] (2) at (0,-1.3) {2};
+  \node[nodof] (3) at (-2.6,-1.3) {3};
+  \node[nodod] (4) at (0,-2.6) {4};
+  \node[nodod] (5) at (1.6,-3.6) {5};
+  \node[nodof] (6) at (3.4,-3.6) {6};
+  \node[nodo]  (7) at (1.6,-4.9) {7};
+  \node[nodod] (8) at (0,-5.9) {8};
+  \node[nodo]  (9) at (-1.4,-5.9) {9};
+  \node[nodod] (10) at (0,-7.2) {10};
+  \node[nodo]  (11) at (1.8,-7.2) {11};
+  \node[nodo]  (12) at (0,-8.5) {12};
+  \node[nodo,fill=gray!30,draw=gray] (13) at (0,-9.8) {13};
+  \draw[->,thick] (1) -- node[left,font=\tiny]{a2 F} (2);
+  \draw[->,thick] (1) -| node[above,font=\tiny,pos=0.3]{a1 V} (3);
+  \draw[->,thick] (2) -- node[above,font=\tiny]{a3 V} (3);
+  \draw[->,thick] (2) -- node[left,font=\tiny]{a4 F} (4);
+  \draw[->,thick] (4) -- node[above right,font=\tiny]{a5} (5);
+  \draw[->,thick] (4) -- node[left,font=\tiny]{a6} (8);
+  \draw[->,thick] (5) -- node[above,font=\tiny]{a7 V} (6);
+  \draw[->,thick] (5) -- node[right,font=\tiny]{a8 F} (7);
+  \draw[->,thick] (7) to[bend left=40] node[left,font=\tiny]{a9} (4);
+  \draw[->,thick] (8) -- node[above,font=\tiny]{a10 V} (9);
+  \draw[->,thick] (8) -- node[left,font=\tiny]{a11 F} (10);
+  \draw[->,thick] (10) to[bend left=20] node[above,font=\tiny]{a12} (11);
+  \draw[->,thick] (11) to[bend left=20] node[below,font=\tiny]{a13} (10);
+  \draw[->,thick] (10) -- node[left,font=\tiny]{a14} (12);
+  \draw[->,thick] (12) -- node[left,font=\tiny]{a18} (13);
+  \draw[->,thick] (3) |- node[pos=0.25,left,font=\tiny]{a15} ($(13.west)+(0,-0.12)$);
+  \draw[->,thick] (9) |- node[pos=0.25,left,font=\tiny]{a17} ($(13.west)+(0,0.12)$);
+  \draw[->,thick] (6) |- node[pos=0.25,right,font=\tiny]{a16} (13);
+\end{tikzpicture}
+\captionof{figure}{Grafo de flujo de \code{procesarPedido}}
+\label{fig:grafo}
+\end{minipage}%
+\begin{minipage}[t]{0.48\linewidth}
+\vspace{0pt}
+\scriptsize
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Arista} & \textbf{De $\rightarrow$ a} & \textbf{Significado}\\
+\midrule
+a1 & 1 $\rightarrow$ 3 & D1 V: pedido nulo\\
+a2 & 1 $\rightarrow$ 2 & D1 F\\
+a3 & 2 $\rightarrow$ 3 & D2 V: sin items\\
+a4 & 2 $\rightarrow$ 4 & D2 F\\
+a5 & 4 $\rightarrow$ 5 & D3: hay item por validar\\
+a6 & 4 $\rightarrow$ 8 & D3: no quedan items\\
+a7 & 5 $\rightarrow$ 6 & D4 V: sin stock\\
+a8 & 5 $\rightarrow$ 7 & D4 F: hay stock\\
+a9 & 7 $\rightarrow$ 4 & siguiente iteración\\
+a10 & 8 $\rightarrow$ 9 & D5 V: rechazado\\
+a11 & 8 $\rightarrow$ 10 & D5 F: aprobado\\
+a12 & 10 $\rightarrow$ 11 & D6: hay item por descontar\\
+a13 & 11 $\rightarrow$ 10 & siguiente iteración\\
+a14 & 10 $\rightarrow$ 12 & D6: no quedan items\\
+a15 & 3 $\rightarrow$ 13 & \code{throw}\\
+a16 & 6 $\rightarrow$ 13 & \code{throw}\\
+a17 & 9 $\rightarrow$ 13 & \code{return}\\
+a18 & 12 $\rightarrow$ 13 & \code{return}\\
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+\subsection{Paso 4: calcular la complejidad ciclomática}
+Se calcula de tres formas para verificar que el grafo está bien construido. Si los tres resultados no coincidieran, el grafo tendría un error.
+\begin{align*}
+  V(G) &= E - N + 2 = 18 - 13 + 2 = \mathbf{7} && \text{(se cuentan las 18 aristas y los 13 nodos)}\\
+  V(G) &= P + 1 = 6 + 1 = \mathbf{7} && \text{(nodos predicado: 1, 2, 4, 5, 8, 10)}\\
+  V(G) &= R = \mathbf{7} && \text{(6 regiones cerradas + la región exterior)}
+\end{align*}
+\textbf{Interpretación:} hay 7 caminos linealmente independientes, así que se necesitan \textbf{7 casos de prueba}.
+
+\subsection{Paso 5: derivar los caminos (método del camino base)}
+Se usa el método de McCabe:
+\begin{enumerate}
+  \item Se elige un \textbf{camino base}: el más ``normal'', el flujo básico del CU-01 con un solo item.
+  \item Se \textbf{invierte una decisión a la vez} respecto del camino base, y cada inversión genera un camino nuevo que recorre al menos una arista nueva.
+\end{enumerate}
+
+\begin{table}[H]
+\centering
+\caption{Derivación de los caminos independientes}
+\scriptsize
+\begin{tabularx}{\linewidth}{llXl}
+\toprule
+\textbf{Camino} & \textbf{Cómo se obtuvo} & \textbf{Secuencia de nodos} & \textbf{Aristas nuevas}\\
+\midrule
+C6 & \textbf{camino base} (1 item, pago aprobado) & 1-2-4-5-7-4-8-10-11-10-12-13 & a2, a4, a5, a6, a8, a9, a11--a14, a18\\
+C1 & invertir D1 (pedido nulo) & 1-3-13 & a1, a15\\
+C2 & invertir D2 (sin items) & 1-2-3-13 & a3\\
+C3 & invertir D4 en la 1.ª iteración & 1-2-4-5-6-13 & a7, a16\\
+C5 & invertir D5 (rechazado) & 1-2-4-5-7-4-8-9-13 & a10, a17\\
+C4 & D3 itera 2 veces y D4 se invierte en la 2.ª & 1-2-4-5-7-4-5-6-13 & (ninguna: 2 iteraciones del 1.er bucle)\\
+C7 & D3 y D6 iteran 3 veces & 1-2-4-(5-7-4)$\times$3-8-10-(11-10)$\times$3-12-13 & (ninguna: 3 iteraciones de cada bucle)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{atencion}[Razonamiento sobre C4 y C7]
+Con los 5 primeros caminos (C6, C1, C2, C3, C5) ya se recorren \textbf{las 18 aristas}: eso es 100\,\% de cobertura de ramas. Pero $V(G) = 7$ pide 2 caminos más. La inversión que faltaría, ``D6 falso desde el principio'' (el segundo bucle con \emph{cero} iteraciones), es un \textbf{camino infactible}: si D2 dejó pasar el pedido, tiene al menos un item, y el segundo bucle recorre los mismos items. Los 2 caminos restantes se obtienen \textbf{variando el número de iteraciones}: C4 hace 2 vueltas del primer bucle y C7 hace 3 vueltas de cada bucle. Como vectores de aristas, son linealmente independientes de los anteriores, porque cambian la cantidad de veces que se recorren a5, a8, a9, a12 y a13. Además, cumplen la \textbf{prueba de bucles} (1 y $n$ iteraciones).
+\end{atencion}
+
+\subsection{Paso 6: sensibilizar cada camino (¿qué datos lo obligan?)}
+\emph{Sensibilizar} un camino es encontrar los datos que obligan al programa a recorrerlo. Para cada decisión se pregunta: ¿de qué depende su valor?
+
+\begin{table}[H]
+\centering
+\caption{¿De qué depende cada decisión?}
+\small
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+\textbf{Decisión} & \textbf{Depende de} & \textbf{Cómo la forzamos}\\
+\midrule
+D1, D2 & el parámetro \code{pedido} & datos: \code{null} o \code{List.of()}\\
+D3, D6 & cantidad de items & datos: 1, 2 o 3 items\\
+D4 & respuesta de \code{InventarioRepository} & \textbf{stub} de \code{stockDisponible}\\
+D5 & respuesta de \code{PasarelaPago} & \textbf{stub} de \code{cobrar}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Valores de cada decisión y datos que los producen}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\linewidth}{lcccccc X}
+\toprule
+\textbf{Camino} & \textbf{D1} & \textbf{D2} & \textbf{D3} & \textbf{D4} & \textbf{D5} & \textbf{D6} & \textbf{Datos y stubs que lo fuerzan}\\
+\midrule
+C1 & V & -- & -- & -- & -- & -- & \code{pedido = null}\\
+C2 & F & V & -- & -- & -- & -- & pedido sin items\\
+C3 & F & F & 1 vuelta & V & -- & -- & P1 $\times$ 5; stub stock(P1) = 4\\
+C4 & F & F & 2 vueltas & F, V & -- & -- & P1 $\times$ 1, P2 $\times$ 3; stock(P1) = 10, stock(P2) = 0\\
+C5 & F & F & 1 vuelta & F & V & -- & P1 $\times$ 2; stock = 2; stub \code{cobrar} $\rightarrow$ rechazado\\
+C6 & F & F & 1 vuelta & F & F & 1 vuelta & P3 $\times$ 1; stock = 1; stub \code{cobrar} $\rightarrow$ aprobado\\
+C7 & F & F & 3 vueltas & F, F, F & F & 3 vueltas & P1 $\times$ 1, P2 $\times$ 5, P3 $\times$ 2; stock = 100; aprobado\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{idea}[¿Por qué en caja blanca se simula también la calculadora?]
+En estas pruebas \code{CalculadoraDescuentos} es un \code{@Mock} con un valor fijo (p.\,ej., \code{calcularDescuento(20.0, REGULAR)} $\rightarrow$ \code{0.0}). Así el camino de \code{procesarPedido} no depende de que la calculadora sea correcta: si falla una prueba, el error está en \code{procesarPedido}. La calculadora se prueba por separado (casos CD y K).
+\end{idea}
+
+\subsection{Paso 7: ¿cómo se demuestra que se recorrió el camino?}
+Una prueba de caja blanca no solo debe dar el resultado correcto: debe \textbf{demostrar} por dónde pasó. Para eso se asigna a cada nodo una \textbf{evidencia observable} y se comprueba con \code{verify}:
+
+\begin{table}[H]
+\centering
+\caption{Evidencia observable de cada nodo}
+\small
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Nodo} & \textbf{Evidencia y cómo se comprueba}\\
+\midrule
+3 & Se lanza \code{IllegalArgumentException} $\rightarrow$ \code{assertThrows}; ningún mock usado $\rightarrow$ \code{verifyNoInteractions}\\
+5 & Se consultó el stock de ese producto $\rightarrow$ \code{verify(inventario).stockDisponible("P1")}\\
+6 & \code{StockInsuficienteException} con el código del producto $\rightarrow$ \code{assertThrows} + mensaje\\
+8 & Se cobró el total calculado $\rightarrow$ stub con el monto exacto\\
+9 & Notificación ``Pago rechazado'' $\rightarrow$ \code{verify(notificador).enviar(EMAIL, "Pago rechazado: ...")}\\
+11 & Se descontó stock $\rightarrow$ \code{verify(inventario, times(n)).descontarStock(...)}\\
+\textbf{no} 11 & No se descontó stock $\rightarrow$ \code{verify(inventario, never()).descontarStock(...)}\\
+12 & Se guardó y se confirmó $\rightarrow$ \code{verify(notificador).enviar(EMAIL, "Pedido ... confirmado ...")}\\
+\textbf{no} 12 & No se guardó $\rightarrow$ \code{verify(pedidoRepository, never()).guardar(any())}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Paso 8: fichas de los casos}
+Productos: \code{P1} Cuaderno (10 Bs), \code{P2} Lapicero (2 Bs), \code{P3} Mochila (80 Bs). Correo: \code{EMAIL = est@umss.edu.bo}.
+
+\fichaprueba{CB-C1}{Pedido nulo}
+{Caja blanca, camino C1 = 1-3-13 (D1 = V).}
+{Servicio con 5 mocks (incluida la calculadora).}
+{\code{pedido = null}, REGULAR.}
+{Ninguno.}
+{Llamar a \code{procesarPedido(null, REGULAR)}.}
+{\code{IllegalArgumentException}.}
+{\code{assertThrows}; \code{verifyNoInteractions} en los 5 mocks (no se pasó del nodo 1).}
+
+\fichaprueba{CB-C2}{Pedido sin items}
+{Caja blanca, camino C2 = 1-2-3-13 (D1 = F, D2 = V).}
+{Igual que C1.}
+{Pedido \code{X} con \code{List.of()}.}
+{Ninguno.}
+{Llamar a \code{procesarPedido}.}
+{\code{IllegalArgumentException}.}
+{\code{assertThrows}; \code{verifyNoInteractions} en los 5 mocks.}
+
+\fichaprueba{CB-C3}{Sin stock en el primer item}
+{Caja blanca, camino C3 = 1-2-4-5-6-13 (D4 = V en la 1.ª vuelta).}
+{Igual que C1.}
+{Pedido con \code{P1 $\times$ 5}.}
+{\code{stockDisponible("P1")} $\rightarrow$ \code{4} ($4 < 5$).}
+{Llamar a \code{procesarPedido}.}
+{\code{StockInsuficienteException}.}
+{\code{verifyNoInteractions(pasarela, calculadora, pedidoRepository, notificador)}; \code{never().descontarStock}: no se llegó al nodo 8.}
+
+\fichaprueba{CB-C4}{Sin stock en el segundo item}
+{Caja blanca, camino C4 = 1-2-4-5-7-4-5-6-13 (2 vueltas; D4 = F y luego V).}
+{Igual que C1.}
+{Pedido con \code{P1 $\times$ 1} y \code{P2 $\times$ 3}.}
+{\code{stockDisponible("P1")} $\rightarrow$ \code{10}; \code{stockDisponible("P2")} $\rightarrow$ \code{0}.}
+{Llamar a \code{procesarPedido}.}
+{\code{StockInsuficienteException} con mensaje ``\ldots producto P2''.}
+{Mensaje exacto; \code{verify} de \code{stockDisponible("P1")} y \code{("P2")} (2 vueltas); \code{verifyNoInteractions(pasarela)}.}
+
+\fichaprueba{CB-C5}{Pago rechazado}
+{Caja blanca, camino C5 = 1-2-4-5-7-4-8-9-13 (D5 = V).}
+{Igual que C1.}
+{Pedido con \code{P1 $\times$ 2}: subtotal 20 Bs; REGULAR.}
+{\code{stockDisponible("P1")} $\rightarrow$ \code{2}; \code{calcularDescuento(20.0, REGULAR)} $\rightarrow$ \code{0.0}; \code{cobrar(EMAIL, 20.0)} $\rightarrow$ \code{rechazado("Sin fondos")}.}
+{Llamar a \code{procesarPedido}.}
+{Estado \code{RECHAZADO}.}
+{\code{verify(notificador).enviar(EMAIL, "Pago rechazado: Sin fondos")} (nodo 9); \code{never().descontarStock} (no nodo 11); \code{never().guardar} (no nodo 12).}
+
+\fichaprueba{CB-C6}{Pago aprobado, un item (camino base)}
+{Caja blanca, camino C6 = 1-2-4-5-7-4-8-10-11-10-12-13.}
+{Igual que C1.}
+{Pedido \code{PED-6} con \code{P3 $\times$ 1}: subtotal 80 Bs; VIP.}
+{\code{stockDisponible("P3")} $\rightarrow$ \code{1}; \code{calcularDescuento(80.0, VIP)} $\rightarrow$ \code{4.0}; \code{cobrar(EMAIL, 76.0)} $\rightarrow$ \code{aprobado("TX-6")}; \code{guardar(pedido)} $\rightarrow$ \code{pedido}.}
+{Llamar a \code{procesarPedido}.}
+{Estado \code{PAGADO}; total $80 - 4 = 76$; se devuelve el pedido guardado.}
+{\code{verify(inventario).descontarStock("P3", 1)} (nodo 11); mensaje exacto ``Pedido PED-6 confirmado. Total: 76.0 Bs. Transacción: TX-6'' (nodo 12).}
+
+\fichaprueba{CB-C7}{Pago aprobado, tres items}
+{Caja blanca, camino C7 (3 vueltas en cada bucle); prueba de bucles.}
+{Igual que C1.}
+{\code{P1 $\times$ 1}, \code{P2 $\times$ 5}, \code{P3 $\times$ 2}: subtotal $10 + 10 + 160 = 180$; REGULAR.}
+{\code{stockDisponible(anyString())} $\rightarrow$ \code{100}; \code{calcularDescuento(180.0, REGULAR)} $\rightarrow$ \code{9.0}; \code{cobrar(EMAIL, 171.0)} $\rightarrow$ \code{aprobado("TX-7")}; \code{guardar} $\rightarrow$ \code{pedido}.}
+{Llamar a \code{procesarPedido}.}
+{Se valida y descuenta cada uno de los 3 productos.}
+{\code{times(3)} en \code{stockDisponible} y \code{descontarStock}; \code{descontarStock} con (P1, 1), (P2, 5) y (P3, 2); una sola confirmación.}
+
+\subsection{Paso 9: código de un caso, anotado con los nodos}
+\begin{lstlisting}[caption={Camino C5: cada línea de la prueba se relaciona con un nodo del grafo}]
+@Test
+@DisplayName("C5: pago rechazado")
+void c5PagoRechazado() {
+    // DATOS -> D1 = F (no es null), D2 = F (tiene 1 item), D3 = 1 vuelta
+    Pedido pedido = new Pedido("X", EMAIL, List.of(new ItemPedido(P1, 2)));
+    // STUB -> nodo 5: D4 = F (stock 2, no es menor que 2)
+    when(inventario.stockDisponible("P1")).thenReturn(2);
+    // STUB -> nodo 8: aislar la calculadora con un valor fijo
+    when(calculadora.calcularDescuento(20.0, TipoCliente.REGULAR)).thenReturn(0.0);
+    // STUB -> nodo 8: D5 = V (el banco rechaza)
+    when(pasarela.cobrar(EMAIL, 20.0)).thenReturn(ResultadoPago.rechazado("Sin fondos"));
+
+    Pedido resultado = servicio.procesarPedido(pedido, TipoCliente.REGULAR);
+
+    assertEquals(EstadoPedido.RECHAZADO, resultado.getEstado());          // nodo 9
+    verify(notificador).enviar(EMAIL, "Pago rechazado: Sin fondos");      // nodo 9
+    verify(inventario, never()).descontarStock(anyString(), anyInt());    // NO pasó por 11
+    verify(pedidoRepository, never()).guardar(any());                     // NO pasó por 12
+}
+\end{lstlisting}
+
+\subsection{Paso 10: ejecutar y medir la cobertura}
+\begin{lstlisting}[style=bash,caption={Salida de la ejecución (ordenada)}]
+Caja blanca - PedidoService.procesarPedido (camino básico) ✔
+├─ C1: pedido null ✔
+├─ C2: pedido sin items ✔
+├─ C3: stock insuficiente en el primer item ✔
+├─ C4: el bucle itera una vez y falla en el segundo item ✔
+├─ C5: pago rechazado ✔
+├─ C6: pago aprobado con un item ✔
+└─ C7: pago aprobado con tres items (bucle de descuento itera 3 veces) ✔
+\end{lstlisting}
+
+Después se mide con JaCoCo (\code{./run.sh cobertura}) y se lee el reporte \textbf{línea por línea}. JaCoCo cuenta las ramas del \emph{bytecode}; por eso la línea 42 del archivo fuente, con la condición compuesta \code{pedido == null || isEmpty()}, tiene 4 ramas (2 por cada condición simple):
+
+\begin{table}[H]
+\centering
+\caption{Ramas cubiertas por línea de \code{PedidoService.java} (datos reales de JaCoCo)}
+\small
+\begin{tabular}{rlcc}
+\toprule
+\textbf{Línea} & \textbf{Código} & \textbf{Solo caja negra} & \textbf{Solo caja blanca}\\
+\midrule
+42 & \code{if (pedido == null || ...isEmpty())} & \textcolor{anot}{\textbf{3/4}} & \textcolor{verde}{\textbf{4/4}}\\
+47 & \code{for} (validación) & 2/2 & 2/2\\
+49 & \code{if (stock < cantidad)} & 2/2 & 2/2\\
+59 & \code{if (!pago.aprobado())} & 2/2 & 2/2\\
+65 & \code{for} (descuento de stock) & 2/2 & 2/2\\
+\midrule
+& \textbf{Total} & \textbf{11/12} & \textbf{12/12}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Lectura:} en el reporte HTML, JaCoCo pinta la línea 42 en \textcolor{anot}{amarillo} (rama parcial) cuando solo se ejecuta la caja negra. Al pasar el cursor indica ``1 of 4 branches missed'': la rama \code{pedido == null} verdadera. Esa rama corresponde al camino C1, que solo apareció al analizar el código. Es el hallazgo OBS-01 de la SRS.
+
+\section{\code{calcularDescuento}: cobertura de decisiones}
+\subsection{Pasos 1 y 2: código numerado y nodos}
+\begin{minipage}[t]{0.55\linewidth}
+\vspace{0pt}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+public double calcularDescuento(double subtotal, TipoCliente tipo) {
+    if (subtotal < 0) {                          // d1
+        throw new IllegalArgumentException(...);
+    }
+    double porcentaje;
+    if (subtotal >= 500) {                       // d2
+        porcentaje = 0.10;
+    } else if (subtotal >= 100) {                // d3
+        porcentaje = 0.05;
+    } else {
+        porcentaje = 0.0;
+    }
+    if (tipo == TipoCliente.VIP) {               // d4
+        porcentaje += 0.05;
+    }
+    return Math.round(subtotal * porcentaje * 100.0) / 100.0;
+}
+\end{lstlisting}
+\end{minipage}%
+\begin{minipage}[t]{0.43\linewidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}[x=0.85cm,y=0.72cm,>={Stealth[length=1.8mm]}]
+  \node[nodod] (1) at (0,0) {1};
+  \node[nodof] (2) at (-2,-1) {2};
+  \node[nodod] (3) at (0,-1.3) {3};
+  \node[nodo] (4) at (1.6,-2.4) {4};
+  \node[nodod] (5) at (-0.6,-2.6) {5};
+  \node[nodo] (6) at (0.4,-3.8) {6};
+  \node[nodo] (7) at (-1.6,-3.8) {7};
+  \node[nodod] (8) at (0,-5) {8};
+  \node[nodo] (9) at (1.6,-5.9) {9};
+  \node[nodo] (10) at (0,-6.8) {10};
+  \node[nodo,fill=gray!30,draw=gray] (11) at (0,-8) {11};
+  \draw[->] (1) -- (2); \draw[->] (1) -- (3);
+  \draw[->] (3) -- (4); \draw[->] (3) -- (5);
+  \draw[->] (5) -- (6); \draw[->] (5) -- (7);
+  \draw[->] (4) -- (8); \draw[->] (6) -- (8); \draw[->] (7) -- (8);
+  \draw[->] (8) -- (9); \draw[->] (8) -- (10); \draw[->] (9) -- (10);
+  \draw[->] (10) -- (11); \draw[->] (2) |- (11);
+\end{tikzpicture}
+\captionof{figure}{Grafo de \code{calcularDescuento}}
+\end{minipage}
+
+\vspace{0.3cm}
+\small Nodos: 1 = d1 (línea 2); 2 = \code{throw} (3); 3 = d2 (5--6); 4 = 10\,\% (7); 5 = d3 (8); 6 = 5\,\% (9); 7 = 0\,\% (11); 8 = d4 (13); 9 = +5\,\% (14); 10 = \code{return} (16); 11 = salida.
+\normalsize
+
+\subsection{Pasos 3 y 4: aristas y complejidad}
+Aristas: $1{\rightarrow}2$, $1{\rightarrow}3$, $3{\rightarrow}4$, $3{\rightarrow}5$, $5{\rightarrow}6$, $5{\rightarrow}7$, $4{\rightarrow}8$, $6{\rightarrow}8$, $7{\rightarrow}8$, $8{\rightarrow}9$, $8{\rightarrow}10$, $9{\rightarrow}10$, $2{\rightarrow}11$, $10{\rightarrow}11$, es decir, $E = 14$ y $N = 11$.
+\[
+V(G) = 14 - 11 + 2 = 5 \qquad V(G) = P + 1 = 4 + 1 = 5
+\]
+
+\subsection{Paso 5: caminos por inversión de decisiones}
+\begin{table}[H]
+\centering
+\caption{Caminos de \code{calcularDescuento}, obtenidos invirtiendo una decisión a la vez}
+\small
+\begin{tabular}{lllcccccl}
+\toprule
+\textbf{Camino} & \textbf{Obtenido} & \textbf{Nodos} & \textbf{d1} & \textbf{d2} & \textbf{d3} & \textbf{d4} & \textbf{Entrada} & \textbf{Esperado}\\
+\midrule
+K2 & base & 1-3-4-8-10-11 & F & V & -- & F & (600, REG) & 60,00\\
+K1 & invertir d1 & 1-2-11 & V & -- & -- & -- & ($-1$, REG) & error\\
+K5 & invertir d4 & 1-3-4-8-9-10-11 & F & V & -- & V & (600, VIP) & 90,00\\
+K4 & invertir d2 & 1-3-5-7-8-10-11 & F & F & F & F & (20, REG) & 0,00\\
+K3 & invertir d3 (desde K4) & 1-3-5-6-8-9-10-11 & F & F & V & V & (200, VIP) & 20,00\\
+\bottomrule
+\end{tabular}
+\end{table}
+Con estos 5 casos, cada decisión toma los valores V y F al menos una vez: 8 de 8 ramas (100\,\%). El oráculo se calcula igual que en caja negra; por ejemplo, K3: $200 \times (0{,}05 + 0{,}05) = 20{,}00$.
+
+\section{Comparación de los dos enfoques}
+\begin{table}[H]
+\centering
+\caption{Caja negra frente a caja blanca en este proyecto}
+\small
+\begin{tabularx}{\linewidth}{lXX}
+\toprule
+& \textbf{Caja negra} & \textbf{Caja blanca}\\
+\midrule
+Base de prueba & SRS: RF-01 a RF-05, RN-01 a RN-04, CU-01 & Código fuente y grafo de flujo\\
+Técnicas & Clases de equivalencia, valores límite, tabla de decisión & Camino básico (McCabe), cobertura de ramas, prueba de bucles\\
+Rol de Mockito & \textbf{Stub}: provee entradas (stock, respuesta del banco) & \textbf{Stub + mock}: fuerza cada decisión y demuestra con \code{verify} por dónde pasó\\
+Aserciones & Solo salidas (\code{assertEquals}, \code{assertThrows}) & Salidas + \code{verify}, \code{never}, \code{times}, \code{verifyNoInteractions}\\
+Robustez ante refactorización & Alta & Menor (más acoplada a la implementación)\\
+Ramas de \code{PedidoService} & 11/12 & \textbf{12/12}\\
+Encontró & error de límite \code{<=} (caso L1) & rama no especificada \code{pedido == null} (OBS-01)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+\chapter{Resultados}
+\label{cap:resultados}
+% =====================================================================
+
+\section{Ejecución de las pruebas}
+\begin{lstlisting}[style=bash,caption={Ejecución con \code{./run.sh cobertura} (resumen)}]
+== Ejecutando pruebas ==
+|- Caja blanca - PedidoService.procesarPedido (camino básico)   7/7  OK
+|- Caja blanca - CalculadoraDescuentos (cobertura de ramas)     5/5  OK
+|- Caja negra - CalculadoraDescuentos                          15/15 OK
+|- Caja negra - PedidoService (tabla de decisión)               5/5  OK
+|- E01 ... E10 (API y arquitectura)                            30/30 OK
+|- Paso1, Paso4, Paso5 (construcción paso a paso)               3/3  OK
+|- Paso2, Paso3, Paso6 (rojos a propósito, @Disabled)           3 omitidas
+Test run finished after 1332 ms
+[        68 tests found           ]
+[         3 tests skipped         ]
+[        65 tests successful      ]
+[         0 tests failed          ]
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+\caption{Resumen de pruebas por categoría}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Categoría} & \textbf{Pruebas} & \textbf{Resultado}\\
+\midrule
+Ejemplos de la API y arquitectura (\code{basico}) & 30 & 30 \textcolor{verde}{\faCheck}\\
+Caja negra (\code{cajanegra}) & 20 & 20 \textcolor{verde}{\faCheck}\\
+Caja blanca (\code{cajablanca}) & 12 & 12 \textcolor{verde}{\faCheck}\\
+Construcción paso a paso (\code{pasoapaso}, en verde) & 3 & 3 \textcolor{verde}{\faCheck}\\
+\midrule
+\textbf{Total} & \textbf{65} & \textbf{65} \textcolor{verde}{\faCheck}\\
+\multicolumn{3}{l}{\scriptsize + 3 pruebas en rojo a propósito (\code{./run.sh rojos}), que fallan como se documenta en el capítulo~\ref{cap:proceso}.}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Cobertura (JaCoCo 0.8.15)}
+\begin{table}[H]
+\centering
+\caption{Cobertura de la capa de servicio}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Clase} & \textbf{Instrucciones} & \textbf{Ramas} & \textbf{Líneas} & \textbf{Complejidad}\\
+\midrule
+\code{PedidoService} & 155/155 (100\,\%) & 12/12 (100\,\%) & 35/35 & 10/10\\
+\code{CalculadoraDescuentos} & 45/45 (100\,\%) & 8/8 (100\,\%) & 11/11 & 6/6\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+  \foreach \y/\lab/\v/\c in {0/{Solo caja negra}/11/anot, -1/{Solo caja blanca}/12/verde, -2/{Todas las pruebas}/12/primario} {
+    \node[anchor=east,font=\small] at (-0.2,\y) {\lab};
+    \fill[\c!70] (0,\y-0.3) rectangle (\v*0.7,\y+0.3);
+    \node[anchor=west,font=\small\bfseries] at (\v*0.7+0.1,\y) {\v/12};
+  }
+  \draw[gris] (0,0.5) -- (0,-2.5);
+  \draw[dashed,acento] (8.4,0.5) -- (8.4,-2.5) node[below,font=\scriptsize]{100\,\%};
+\end{tikzpicture}
+\caption{Ramas cubiertas de \code{PedidoService} según el tipo de prueba}
+\end{figure}
+
+\begin{idea}[Hallazgo]
+Las pruebas de caja negra, diseñadas solo a partir de los requisitos, cubren 11 de 12 ramas de \code{PedidoService}. La rama \code{pedido == null} no aparece en la tabla de decisión porque la SRS no habla de ``pedidos nulos''. Solo al analizar el código (caja blanca, camino C1) se detectó que esa rama existía y estaba sin probar; se registró como hallazgo OBS-01 de la SRS. A la inversa, el caso de valor límite L1 de la caja negra detectó el error de mutación \code{<=}. \textbf{Las dos técnicas son complementarias}: la caja negra comprueba que se hace lo que se pidió y la caja blanca, que todo el código escrito está probado.
+\end{idea}
+
+% =====================================================================
+\chapter{Conclusiones y recomendaciones}
+% =====================================================================
+
+\section{Conclusiones}
+\begin{enumerate}
+  \item Mockito permite escribir pruebas unitarias \textbf{rápidas, aisladas y repetibles}: las 65 pruebas del proyecto se ejecutan en poco más de un segundo sin base de datos, banco ni servidor de correo.
+  \item Mockito tiene una arquitectura en capas: una fachada pública (\code{Mockito}), un núcleo interno (\code{MockHandler}, \code{InvocationContainer}, \code{MockingProgress}, \code{VerificationMode}\ldots), un sistema de plugins y bibliotecas de generación de código (Byte Buddy, Objenesis). Conocer esos componentes explica reglas prácticas como ``todos los argumentos con matchers o ninguno'' o el uso de \code{doXxx()} en métodos \code{void}, y permite diagnosticar cualquier error de Mockito.
+  \item Las pruebas \textbf{se diseñan antes de programarse}. Seguimos un proceso explícito: SRS $\rightarrow$ condiciones $\rightarrow$ elementos de cobertura $\rightarrow$ fichas de casos con su oráculo calculado a mano $\rightarrow$ código. Así, cada prueba se justifica y se puede auditar.
+  \item La testabilidad \textbf{se diseña}. Especificar los requisitos en una SRS verificable y documentar el diseño en un SDD con interfaces e inyección por constructor fue lo que hizo posible reemplazar cada dependencia por un mock y trazar cada requisito hasta sus pruebas.
+  \item Diseñar las pruebas también \textbf{audita los requisitos}: encontramos 4 vacíos en la SRS (OBS-01 a OBS-04).
+  \item En \textbf{caja negra}, Mockito actúa como \emph{stub} que provee entradas. En \textbf{caja blanca}, fuerza cada rama del grafo de flujo y demuestra con \code{verify} qué se ejecutó.
+  \item Se alcanzó el 100\,\% de cobertura de ramas en la capa de servicio y se cumplió el RNF-02. La comparación de coberturas mostró que ninguna técnica por separado basta.
+  \item Para la \textbf{auditoría de sistemas}, un conjunto de pruebas automatizadas con matriz de trazabilidad y reporte de cobertura es evidencia objetiva y verificable de la calidad del software.
+\end{enumerate}
+
+\section{Recomendaciones}
+\begin{itemize}
+  \item Integrar las pruebas en un pipeline de integración continua (GitHub Actions, GitLab CI) y bloquear los cambios que las rompan o bajen la cobertura.
+  \item Complementar las pruebas unitarias con pruebas de integración (p.\,ej., Testcontainers) para validar que las dependencias reales se comportan como los mocks suponen.
+  \item Evitar el exceso de \code{verify()}: verificar solo las interacciones que forman parte del contrato.
+  \item Como auditores, pedir el reporte de cobertura y la matriz de trazabilidad, y volver a ejecutar las pruebas para confirmar los resultados.
+\end{itemize}
+
+% =====================================================================
+\chapter*{Referencias}
+\addcontentsline{toc}{chapter}{Referencias}
+\begin{enumerate}[label={[\arabic*]}]
+  \item Mockito. \emph{Mockito framework site}. \url{https://site.mockito.org}
+  \item Mockito. \emph{Mockito Javadoc (5.x)}. \url{https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html}
+  \item Mockito. \emph{Repositorio oficial}. \url{https://github.com/mockito/mockito}
+  \item JUnit Team. \emph{JUnit User Guide}. \url{https://docs.junit.org}
+  \item Meszaros, G. (2007). \emph{xUnit Test Patterns: Refactoring Test Code}. Addison-Wesley.
+  \item Fowler, M. (2007). \emph{Mocks Aren't Stubs}. \url{https://martinfowler.com/articles/mocksArentStubs.html}
+  \item McCabe, T. J. (1976). A Complexity Measure. \emph{IEEE Transactions on Software Engineering}, SE-2(4), 308--320.
+  \item Pressman, R. S. y Maxim, B. R. (2020). \emph{Ingeniería del software: un enfoque práctico} (9.ª ed.). McGraw-Hill.
+  \item Myers, G. J., Sandler, C. y Badgett, T. (2011). \emph{The Art of Software Testing} (3.ª ed.). Wiley.
+  \item IEEE (2009). \emph{IEEE Std 1016-2009 -- Standard for Information Technology -- Systems Design -- Software Design Descriptions}.
+  \item ISO/IEC/IEEE 29119 (2013--2022). \emph{Software and systems engineering -- Software testing}.
+  \item ISACA (2018). \emph{COBIT 2019 Framework: Governance and Management Objectives}.
+  \item Freeman, S. y Pryce, N. (2009). \emph{Growing Object-Oriented Software, Guided by Tests}. Addison-Wesley.
+  \item JaCoCo. \emph{Java Code Coverage Library}. \url{https://www.jacoco.org/jacoco}
+\end{enumerate}
+
+% =====================================================================
+\appendix
+\chapter{Estructura del proyecto y ejecución}
+\begin{lstlisting}[style=bash,caption={Estructura de \code{ejemplos-mockito/}}]
+ejemplos-mockito/
+|-- pom.xml                      # Maven: JUnit 6, Mockito 5.24, JaCoCo
+|-- run.sh                       # Ejecuta todo sin Maven (solo JDK 21+)
+|-- README.md
+`-- src/
+    |-- main/java/bo/edu/umss/pedidos/
+    |   |-- modelo/      Pedido, ItemPedido, Producto, ResultadoPago, enums, excepciones
+    |   |-- puertos/     InventarioRepository, PasarelaPago, Notificador, PedidoRepository
+    |   `-- servicio/    PedidoService, CalculadoraDescuentos
+    `-- test/java/bo/edu/umss/pedidos/
+        |-- basico/      E01 ... E10  (API y arquitectura de Mockito)
+        |-- pasoapaso/   Paso1 ... Paso6 (construcción de una prueba, de rojo a verde)
+        |-- cajanegra/   CalculadoraDescuentosCajaNegraTest, PedidoServiceCajaNegraTest
+        `-- cajablanca/  PedidoServiceCajaBlancaTest, CalculadoraDescuentosCajaBlancaTest
+\end{lstlisting}
+
+\begin{lstlisting}[style=bash,caption={Comandos de ejecución}]
+cd ejemplos-mockito
+./run.sh               # compila y ejecuta las pruebas (65 verdes + 3 omitidas)
+./run.sh cobertura     # + reporte HTML en target/cobertura/index.html
+./run.sh rojos         # ejecuta las 3 versiones en rojo del paso a paso
+mvn test               # alternativa con Maven (reporte en target/site/jacoco)
+\end{lstlisting}
+
+\end{document}

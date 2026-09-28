@@ -1,0 +1,21 @@
+# Sistema
+.DS_Store
+
+# LaTeX (archivos temporales de compilación)
+*.aux
+*.log
+*.toc
+*.out
+*.lof
+*.lot
+*.lol
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+
+# Java: se regeneran con ./run.sh
+ejemplos-mockito/target/
+ejemplos-mockito/lib/
